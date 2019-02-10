@@ -1,0 +1,14 @@
+.idea
+.gradle
+.vscode
+
+gradle
+out
+build
+
+gradlew
+
+*.bat
+*.iml
+*.jar
+*.war
