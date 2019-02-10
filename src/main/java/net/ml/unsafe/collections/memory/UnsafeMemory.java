@@ -20,13 +20,13 @@ public class UnsafeMemory<T extends Serializable> implements Memory<T>, Iterable
 
     private long address = -1;
     private int capacity;
-    private boolean hasWritten;
+    private boolean hasWritten = false;
     private int classSize;
 
     private final ByteSerializer<T> serializer;
 
     /**
-     * Create a new memory instancee
+     * Create a new memory instance
      *
      * @param serializer the byte serializer for the object
      * @param capacity the capacity of the memory store
