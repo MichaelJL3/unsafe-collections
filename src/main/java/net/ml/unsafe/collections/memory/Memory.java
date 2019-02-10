@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections;
+package net.ml.unsafe.collections.memory;
 
 /**
  * Managed memory interface
@@ -23,8 +23,6 @@ public interface Memory<T> {
     void copy(int indexA, int indexB);
     //get the object at the block id
     T get(int index);
-    //get the object at the block id
-    void get(int index, T o);
     //get the number of segment ids in the memory chunk
     int size();
 }

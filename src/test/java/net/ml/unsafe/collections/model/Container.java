@@ -4,9 +4,17 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class Container<T> implements Serializable {
-    private int x = 3;
+    private int x;
     public Short y;
     public T z;
+
+    public Container() {}
+
+    public Container(int x, short y, T z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
 
     @Override
     public String toString() {

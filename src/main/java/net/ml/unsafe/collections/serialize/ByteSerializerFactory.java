@@ -19,9 +19,8 @@ public class ByteSerializerFactory {
         switch(type) {
             case BUFFER_STREAM_SERIALIZER:
                 return new ByteStreamBufferSerializer<>();
-            case REFLECTIVE_FIELD_SERIALIZER:
-                return null;
             case ARRAY_STREAM_SERIALIZER:
+                return new ByteStreamSerializer<>();
             default:
                 return new ByteStreamSerializer<>();
         }

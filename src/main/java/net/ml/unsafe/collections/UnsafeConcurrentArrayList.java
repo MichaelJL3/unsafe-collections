@@ -1,6 +1,7 @@
 package net.ml.unsafe.collections;
 
-import net.ml.unsafe.collections.memory.Memory;
+import net.ml.unsafe.collections.memory.ConcurrentMemory;
+import net.ml.unsafe.collections.memory.UnsafeConcurrentMemory;
 import net.ml.unsafe.collections.memory.UnsafeMemory;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
@@ -8,6 +9,7 @@ import net.ml.unsafe.collections.serialize.ByteSerializerType;
 
 import java.io.Serializable;
 import java.util.AbstractList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ArrayList using unsafe memory allocation
@@ -15,16 +17,16 @@ import java.util.AbstractList;
  * @author micha
  * @param <T> the type to store in the arraylist
  */
-public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
+public class UnsafeConcurrentArrayList<T extends Serializable> extends AbstractList<T> {
     private static final int DEFAULT_CAPACITY = 16;
 
-    private int size = 0;
-    private final Memory<T> memory;
+    private AtomicInteger size = new AtomicInteger(0);
+    private final ConcurrentMemory<T> memory;
 
     /**
      * Create a new unsafe arraylist
      */
-    public UnsafeArrayList() {
+    public UnsafeConcurrentArrayList() {
         this(ByteSerializerFactory.getSerializer(ByteSerializerType.DEFAULT), DEFAULT_CAPACITY);
     }
 
@@ -33,7 +35,7 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
      *
      * @param serializer the object serializer
      */
-    public UnsafeArrayList(ByteSerializer<T> serializer) {
+    public UnsafeConcurrentArrayList(ByteSerializer<T> serializer) {
         this(serializer, DEFAULT_CAPACITY);
     }
 
@@ -42,7 +44,7 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
      *
      * @param capacity initial capacity of the arraylist
      */
-    public UnsafeArrayList(int capacity) {
+    public UnsafeConcurrentArrayList(int capacity) {
         this(ByteSerializerFactory.getSerializer(ByteSerializerType.DEFAULT), capacity);
     }
 
@@ -52,8 +54,8 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
      * @param serializer the object serializer
      * @param capacity initial capacity of the arraylist
      */
-    public UnsafeArrayList(ByteSerializer<T> serializer, int capacity) {
-        this.memory = new UnsafeMemory<>(serializer, capacity);
+    public UnsafeConcurrentArrayList(ByteSerializer<T> serializer, int capacity) {
+        this.memory = new UnsafeConcurrentMemory<>(new UnsafeMemory<>(serializer, capacity));
     }
 
     /**
@@ -97,12 +99,12 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
         if (isFull()) resize();
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
 
-        for (int i = size; i > index; --i) {
+        for (int i = size.get(); i > index; --i) {
             memory.put(i, memory.get(i - 1));
         }
 
         memory.put(index, element);
-        ++size;
+        size.getAndIncrement();
     }
 
     /**
@@ -118,12 +120,13 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
 
         T o = memory.get(index);
+        int localSize = size.get();
 
-        for (int i = index; i < size - 1; ++i) {
+        for (int i = index; i < localSize; ++i) {
             memory.put(i, memory.get(i + 1));
         }
 
-        --size;
+        size.getAndDecrement();
         return o;
     }
 
@@ -134,7 +137,7 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
      */
     @Override
     public int size() {
-        return size;
+        return size.get();
     }
 
     /**
@@ -143,7 +146,7 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
     @Override
     public void clear() {
         memory.free();
-        size = 0;
+        size.set(0);
     }
 
     /**
@@ -152,14 +155,14 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
      * @return whether or not the arraylist is at capacity
      */
     private boolean isFull() {
-        return memory.size() == size;
+        return memory.size() == size.get();
     }
 
     /**
      * Attampt to increase the size of the arraylist by 1.5 times the size
      */
     private void resize() {
-        memory.realloc(size);
+        memory.realloc(size.get());
     }
 
     /**
@@ -169,6 +172,6 @@ public class UnsafeArrayList<T extends Serializable> extends AbstractList<T> {
      * @return whether or not the index is out of bounds
      */
     private boolean outOfBounds(int index) {
-        return index < 0 || index > size;
+        return index < 0 || index > size.get();
     }
 }
