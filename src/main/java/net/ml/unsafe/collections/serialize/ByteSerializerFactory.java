@@ -7,12 +7,12 @@ import java.io.Serializable;
  *
  * @author micha
  */
-public class ByteSerializerFactory {
+public final class ByteSerializerFactory {
     /**
-     * Get byte a byte serializer
+     * Get a byte serializer
      *
      * @param type the type of serializer to retrieve
-     * @param <O> the object to serialize
+     * @param <O> the object type to serialize
      * @return the byte serializer
      */
     public static <O extends Serializable> ByteSerializer<O> getSerializer(ByteSerializerType type) {

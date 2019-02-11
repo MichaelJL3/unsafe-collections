@@ -14,7 +14,7 @@ public class UnsafeConcurrentMemory<T extends Serializable> implements Concurren
     private final Memory<T> memory;
 
     /**
-     * Create a new memory instance
+     * Create a new concurrent memory instance
      *
      * @param memory the memory to add concurrent protection to
      */

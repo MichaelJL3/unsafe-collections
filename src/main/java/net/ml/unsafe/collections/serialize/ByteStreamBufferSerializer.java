@@ -46,9 +46,11 @@ public class ByteStreamBufferSerializer<O extends Serializable> extends ByteStre
 
             //flush a full buffer
             if (buffered == flushSize) {
+                byte[] bytes = bos.toByteArray();
+                bos.reset();
                 out.flush();
                 buffered = 0;
-                return bos.toByteArray();
+                return bytes;
             }
 
             return null;

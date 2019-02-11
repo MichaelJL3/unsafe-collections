@@ -171,7 +171,7 @@ public class UnsafeMemory<T extends Serializable> implements Memory<T>, Iterable
     /**
      * Load the objects bytes
      *
-     * @param bytes the bytes to store
+     * @param bytes the bytes to load into
      * @param address the address to load
      */
     private void loadBytes(byte[] bytes, long address) {
