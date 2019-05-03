@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections;
+package net.ml.unsafe.collections.memory;
 
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -9,8 +9,8 @@ import java.util.function.Consumer;
  * @author micha
  * @param <T> the type of object stored
  */
-public class MemoryIterator<T> implements Iterator<T> {
-    private final Memory<T> memory;
+public final class MemoryIterator<T> implements Iterator<T> {
+    private final MemoryBlock<T> memory;
     private int index = 0;
 
     /**
@@ -18,7 +18,7 @@ public class MemoryIterator<T> implements Iterator<T> {
      *
      * @param memory the memory to iterate through
      */
-    public MemoryIterator(Memory<T> memory) {
+    public MemoryIterator(MemoryBlock<T> memory) {
         this.memory = memory;
     }
 
@@ -45,11 +45,11 @@ public class MemoryIterator<T> implements Iterator<T> {
     /**
      * Remove the object from the memory block
      *
-     * Does nothing the block can be overwritten if needed
+     * @throws UnsupportedOperationException cannot remove a block of the memory chunk
      */
     @Override
     public void remove() {
-
+        throw new UnsupportedOperationException();
     }
 
     /**

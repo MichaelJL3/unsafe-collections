@@ -15,15 +15,21 @@ public class ByteSerializerFactory {
      * @param <O> the object to serialize
      * @return the byte serializer
      */
-    public static <O extends Serializable> ByteSerializer<O> getSerializer(ByteSerializerType type) {
+    public static <O> ByteSerializer<O> getSerializer(ByteSerializerType type) {
         switch(type) {
             case BUFFER_STREAM_SERIALIZER:
                 return new ByteStreamBufferSerializer<>();
             case REFLECTIVE_FIELD_SERIALIZER:
                 return null;
             case ARRAY_STREAM_SERIALIZER:
-            default:
                 return new ByteStreamSerializer<>();
+            case KRYO_SERIALIZER:
+            default:
+                return new KryoSerializer<>();
         }
+    }
+
+    public static <O> ByteSerializer<O> getDefaultSerializer() {
+        return new KryoSerializer<>();
     }
 }

@@ -8,7 +8,7 @@ import java.io.*;
  * @author micha
  * @param <O> the object to serialize/deserialize
  */
-public class ByteStreamSerializer<O extends Serializable> implements ByteSerializer<O> {
+public class ByteStreamSerializer<O> implements ByteSerializer<O> {
     /**
      * Serialize the object to a byte array
      *

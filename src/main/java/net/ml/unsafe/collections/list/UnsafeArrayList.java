@@ -1,4 +1,7 @@
-package net.ml.unsafe.collections;
+package net.ml.unsafe.collections.list;
+
+import net.ml.unsafe.collections.memory.Memory;
+import net.ml.unsafe.collections.memory.UnsafeMemory;
 
 import java.util.AbstractList;
 
@@ -12,7 +15,7 @@ public class UnsafeArrayList<T> extends AbstractList<T> {
     private static final int DEFAULT_CAPACITY = 16;
 
     private int size = 0;
-    private final Memory<T> memory;
+    private final Memory memory;
 
     /**
      * Create a new unsafe arraylist

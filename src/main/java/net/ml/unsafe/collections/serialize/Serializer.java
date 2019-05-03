@@ -1,7 +1,5 @@
 package net.ml.unsafe.collections.serialize;
 
-import java.io.Serializable;
-
 /**
  * Serialize objects of type O into type B
  *
@@ -9,7 +7,7 @@ import java.io.Serializable;
  * @param <B> the serialized output type
  * @param <O> the input object to serialize
  */
-public interface Serializer<B, O extends Serializable> {
+public interface Serializer<B, O> {
     //serialize object
     B serialize(O object);
     //deserialize to get object

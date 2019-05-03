@@ -8,7 +8,7 @@ import java.io.*;
  * @author micha
  * @param <O> the object to serialize/deserialize
  */
-public class ByteStreamBufferSerializer<O extends Serializable> extends ByteStreamSerializer<O> {
+public class ByteStreamBufferSerializer<O> extends ByteStreamSerializer<O> {
     private static final int DEFAULT_FLUSH_SIZE = 1000;
 
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();

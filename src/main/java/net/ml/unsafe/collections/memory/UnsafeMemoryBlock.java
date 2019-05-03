@@ -1,12 +1,11 @@
-package net.ml.unsafe.collections;
+package net.ml.unsafe.collections.memory;
 
-import com.sun.istack.internal.NotNull;
+import net.ml.unsafe.collections.serialize.ByteSerializer;
+import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 import net.ml.unsafe.collections.util.SizeOf;
-import net.ml.unsafe.collections.util.UnsafeSerializer;
 import net.ml.unsafe.collections.util.UnsafeSingleton;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.*;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -17,23 +16,28 @@ import java.util.function.Consumer;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
+public final class UnsafeMemoryBlock<T> implements MemoryBlock<T>, Iterable<T> {
     private static final Unsafe unsafe = UnsafeSingleton.getUnsafe();
 
     private long address = -1;
     private int capacity;
 
+    //decide what i need to pass, and what default actions are!!!
     private final int classSize;
     private final Class<T> classType;
+    private final ByteSerializer<T> serializer;
+
+    private final Memory memory = new UnsafeMemory();
 
     /**
      * Create a new memory instance without any allocated space
      *
      * @param classType the type of object to store
      */
-    public UnsafeMemory(Class<T> classType) {
+    public UnsafeMemoryBlock(Class<T> classType) {
         this.classType = classType;
         this.classSize = SizeOf.sizeOf(classType);
+        this.serializer = ByteSerializerFactory.getDefaultSerializer();
     }
 
     /**
@@ -43,7 +47,7 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
      * @param classType the type of object to store
      * @param capacity the number of objects to allocate for
      */
-    public UnsafeMemory(Class<T> classType, int capacity) {
+    public UnsafeMemoryBlock(Class<T> classType, int capacity) {
         this(classType);
         malloc(capacity);
     }
@@ -58,7 +62,7 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
         //deallocate used memory
         if (address != -1) free();
 
-        address = unsafe.allocateMemory(capacity * classSize);;
+        address = memory.malloc(capacity * classSize);
         this.capacity = capacity;
     }
 
@@ -70,8 +74,8 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
     @Override
     public void realloc(int  capacity) {
         address = (address == -1) ?
-                unsafe.allocateMemory(capacity * classSize) :
-                unsafe.reallocateMemory(address, capacity* classSize);
+                memory.malloc(capacity * classSize) :
+                memory.realloc(address, capacity * classSize);
         this.capacity = capacity;
     }
 
@@ -80,7 +84,7 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
      */
     @Override
     public void free() {
-        unsafe.freeMemory(address);
+        memory.free(address);
         address = -1;
     }
 
@@ -91,24 +95,10 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
      * @return the retrieved object
      */
     @Override
-    @SuppressWarnings("unchecked")
     public T get(int index) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-        return (T) UnsafeSerializer.load(classType, getMemoryAddress(index));
-    }
-
-    /**
-     * Get the object at the given index
-     *
-     * Fills the provided object
-     *
-     * @param index the index to retrieve
-     * @psram o the object to fill (should not be null - is unchecked)
-     */
-    @Override
-    public void get(int index, @NotNull T o) {
-        if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-        UnsafeSerializer.fill(o, getMemoryAddress(index));
+        byte[] bytes = memory.get(getMemoryAddress(index), classSize);
+        return serializer.deserialize(bytes);
     }
 
     /**
@@ -120,34 +110,7 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
     @Override
     public void put(int index, T o) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-        UnsafeSerializer.store(o, getMemoryAddress(index));
-    }
-
-    /**
-     * Swap the memory blocks
-     *
-     * @param indexA the first index
-     * @param indexB the second index
-     */
-    @Override
-    public void swap(int indexA, int indexB) {
-        if (outOfBounds(indexA) || outOfBounds(indexB)) throw new IndexOutOfBoundsException();
-
-        T tmp = get(indexB);
-        put(indexB, get(indexA));
-        put(indexA, tmp);
-    }
-
-    /**
-     * Copy a memory block to another block
-     *
-     * @param indexA the source index
-     * @param indexB the destination index
-     */
-    @Override
-    public void copy(int indexA, int indexB) {
-        if (outOfBounds(indexA) || outOfBounds(indexB)) throw new IndexOutOfBoundsException();
-        put(indexB, get(indexA));
+        memory.put(getMemoryAddress(index), serializer.serialize(o));
     }
 
     /**
@@ -166,8 +129,8 @@ public final class UnsafeMemory<T> implements Memory<T>, Iterable<T> {
      * @return the unsafe memory copy
      */
     @Override
-    public UnsafeMemory<T> clone() {
-        UnsafeMemory<T> memClone = new UnsafeMemory<>(classType, capacity);
+    public UnsafeMemoryBlock<T> clone() {
+        UnsafeMemoryBlock<T> memClone = new UnsafeMemoryBlock<>(classType, capacity);
         unsafe.copyMemory(address, memClone.address, capacity * classSize);
 
         return  memClone;
