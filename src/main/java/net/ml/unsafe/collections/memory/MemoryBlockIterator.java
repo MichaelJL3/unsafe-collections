@@ -9,7 +9,7 @@ import java.util.function.Consumer;
  * @author micha
  * @param <T> the type of object stored
  */
-public final class MemoryIterator<T> implements Iterator<T> {
+public final class MemoryBlockIterator<T> implements Iterator<T> {
     private final MemoryBlock<T> memory;
     private int index = 0;
 
@@ -18,7 +18,7 @@ public final class MemoryIterator<T> implements Iterator<T> {
      *
      * @param memory the memory to iterate through
      */
-    public MemoryIterator(MemoryBlock<T> memory) {
+    public MemoryBlockIterator(MemoryBlock<T> memory) {
         this.memory = memory;
     }
 

@@ -1,9 +1,8 @@
 package net.ml.unsafe.collections.list;
 
-import net.ml.unsafe.collections.memory.Memory;
-import net.ml.unsafe.collections.memory.UnsafeMemory;
-
+import net.ml.unsafe.collections.memory.*;
 import java.util.AbstractList;
+import java.util.stream.IntStream;
 
 /**
  * ArrayList using unsafe memory allocation
@@ -12,28 +11,11 @@ import java.util.AbstractList;
  * @param <T> the type to store in the arraylist
  */
 public class UnsafeArrayList<T> extends AbstractList<T> {
-    private static final int DEFAULT_CAPACITY = 16;
-
+    private final MemoryBlock<T> memory;
     private int size = 0;
-    private final Memory memory;
 
-    /**
-     * Create a new unsafe arraylist
-     *
-     * @param classType the type of object stored
-     */
-    public UnsafeArrayList(Class<T> classType) {
-        this(classType, DEFAULT_CAPACITY);
-    }
-
-    /**
-     * Create a new unsafe arraylist with the given size
-     *
-     * @param classType the type of object stored
-     * @param capacity initial capacity of the arraylist
-     */
-    public UnsafeArrayList(Class<T> classType, int capacity) {
-        this.memory = new UnsafeMemory<>(classType, capacity);
+    public UnsafeArrayList(MemoryBlock<T> block) {
+        this.memory = block;
     }
 
     /**
@@ -77,9 +59,7 @@ public class UnsafeArrayList<T> extends AbstractList<T> {
         if (isFull()) resize();
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
 
-        for (int i = size; i > index; --i) {
-            memory.put(i, memory.get(i - 1));
-        }
+        IntStream.range(index, size()).forEach(i -> memory.put(i, memory.get(i - 1)));
 
         memory.put(index, element);
         ++size;
@@ -99,9 +79,7 @@ public class UnsafeArrayList<T> extends AbstractList<T> {
 
         T o = memory.get(index);
 
-        for (int i = index; i < size - 1; ++i) {
-            memory.put(i, memory.get(i + 1));
-        }
+        IntStream.range(index, size() - 1).forEach(i -> memory.put(i, memory.get(i - 1)));
 
         --size;
         return o;
@@ -132,14 +110,14 @@ public class UnsafeArrayList<T> extends AbstractList<T> {
      * @return whether or not the arraylist is at capacity
      */
     private boolean isFull() {
-        return memory.size() == size;
+        return memory.size() == size();
     }
 
     /**
      * Attampt to increase the size of the arraylist by 1.5 times the size
      */
     private void resize() {
-        memory.realloc(size);
+        memory.realloc(size());
     }
 
     /**
@@ -149,6 +127,6 @@ public class UnsafeArrayList<T> extends AbstractList<T> {
      * @return whether or not the index is out of bounds
      */
     private boolean outOfBounds(int index) {
-        return index < 0 || index > size;
+        return index < 0 || index > size();
     }
 }

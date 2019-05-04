@@ -28,7 +28,7 @@ public class UnsafeLinkedList<T> extends AbstractList<T> {
      * @return the object at the index
      *
      * @throws IndexOutOfBoundsException accessing index outside of the linked list
-     */
+    */
     @Override
     public T get(int index) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();

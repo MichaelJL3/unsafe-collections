@@ -6,6 +6,7 @@ package net.ml.unsafe.collections.memory;
  * Manages chunks of memory of the associated model
  *
  * @author micha
+ * @param <T> the type of object to manage the memory of
  */
 public interface Memory {
     //allocate memory
@@ -14,7 +15,7 @@ public interface Memory {
     long realloc(long address, int size);
     //free the memory chunk
     void free(long address);
-    //place the object bytes into the specified segment
+    //place the object into the specified segment
     void put(long address, byte[] bytes);
     //swap two objects by the block indexes
     void swap(long addressA, long addressB, int size);

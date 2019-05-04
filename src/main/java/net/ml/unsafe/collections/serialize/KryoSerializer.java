@@ -7,8 +7,6 @@ import com.esotericsoftware.kryo.io.Output;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.DeflaterOutputStream;
 
 public class KryoSerializer<T> implements ByteSerializer<T> {
     private static final ThreadLocal<Kryo> kryoThread = ThreadLocal.withInitial(Kryo::new);
@@ -21,22 +19,24 @@ public class KryoSerializer<T> implements ByteSerializer<T> {
 
     @Override
     public byte[] serialize(T object) {
+        ByteArrayOutputStream bytes;
+
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             DeflaterOutputStream zipOut = new DeflaterOutputStream(out);
-             Output output = new Output(zipOut)) {
+             Output output = new Output(out)) {
             kryoThread.get().writeClassAndObject(output, object);
-            return out.toByteArray();
+            bytes = out;
         } catch(IOException ex) {
             throw new RuntimeException(ex);
         }
+
+        return bytes.toByteArray();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T deserialize(byte[] bytes) {
         try (ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-             DeflaterInputStream zipIn = new DeflaterInputStream(in);
-             Input input = new Input(zipIn)) {
+             Input input = new Input(in)) {
             return (T) kryoThread.get().readClassAndObject(input);
         } catch(IOException ex) {
             throw new RuntimeException(ex);
