@@ -4,7 +4,7 @@ import net.ml.unsafe.collections.util.UnsafeSingleton;
 import sun.misc.Unsafe;
 
 /**
- * Manage memory of objects through unsafe
+ * Manages chunks of memory using unsafe
  *
  * @author micha
  */
@@ -12,32 +12,36 @@ public final class UnsafeMemory implements Memory {
     private static final Unsafe unsafe = UnsafeSingleton.getUnsafe();
 
     /**
-     * Allocate memory for n objects where n = capacity * sizeOf(T)
+     * Allocate memory using unsafe
      *
      * @param size the number of bytes to allocate
-     * @return the new address of the memory allocation
+     * @return the start address of the allocated memory
      */
     @Override
     public long malloc(int size) {
-        return unsafe.allocateMemory(size);
+        long addr = unsafe.allocateMemory(size);
+        zeroData(addr, size);
+        return addr;
     }
 
     /**
-     * Reallocate memory to new location with increased size
+     * Increase the size of a memory allocation using unsafe
      *
-     * @param address the original address of the memory
-     * @param size the amount of bytes to reallocate for
-     * @return the new address of the memory reallocation
+     * @param address the address of the original memory allocation
+     * @param size the number of bytes to
+     * @return the address of the increased allocation
      */
     @Override
     public long realloc(long address, int size) {
-        return unsafe.reallocateMemory(address, size);
+        long addr = unsafe.reallocateMemory(address, size);
+        zeroData(addr, size);
+        return addr;
     }
 
     /**
-     * Free the allocated memory
+     * Release the allocated memory using unsafe
      *
-     * @param address the address to free
+     * @param address the address to release
      */
     @Override
     public void free(long address) {
@@ -45,10 +49,11 @@ public final class UnsafeMemory implements Memory {
     }
 
     /**
-     * Get the object at the given index
+     * Get the bytes at the address using unsafe
      *
-     * @param address the address to retrieve the information from
-     * @return the retrieved object bytes
+     * @param address the start address of the bytes
+     * @param size the number of bytes to retrieve
+     * @return the bytes retrieved
      */
     @Override
     public byte[] get(long address, int size) {
@@ -58,9 +63,9 @@ public final class UnsafeMemory implements Memory {
     }
 
     /**
-     * Put an object into the memory at the given address
+     * Place the bytes into memory using unsafe
      *
-     * @param address the address to store the object
+     * @param address the address to store the bytes
      * @param bytes the bytes to store
      */
     @Override
@@ -69,10 +74,10 @@ public final class UnsafeMemory implements Memory {
     }
 
     /**
-     * Swap the memory blocks
+     * Swap the bytes of two addresses using unsafe
      *
-     * @param addressA the first address
-     * @param addressB the second address
+     * @param addressA the first address in memory
+     * @param addressB the second address in memory
      * @param size the number of bytes to swap
      */
     @Override
@@ -83,10 +88,10 @@ public final class UnsafeMemory implements Memory {
     }
 
     /**
-     * Copy a memory block to another block
+     * Copy the bytes of one address into another using unsafe
      *
-     * @param addressA the source address
-     * @param addressB the destination address
+     * @param addressA the address to copy from
+     * @param addressB the address to copy to
      * @param size the number of bytes to copy
      */
     @Override
@@ -112,5 +117,15 @@ public final class UnsafeMemory implements Memory {
      */
     private void storeBytes(long address, byte[] bytes) {
         unsafe.copyMemory(bytes, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, address, bytes.length);
+    }
+
+    /**
+     * Zero out the data at the address
+     *
+     * @param address the address to clear
+     * @param size the number of bytes to clear
+     */
+    private void zeroData(long address, int size) {
+        storeBytes(address, new byte[size]);
     }
 }

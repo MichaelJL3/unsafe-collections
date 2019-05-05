@@ -8,15 +8,36 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class KryoSerializer<T> implements ByteSerializer<T> {
+/**
+ * Kryo byte serializer
+ *
+ * @author micha
+ * @param <T> the type of object to serialize
+ */
+public final class KryoSerializer<T> implements ByteSerializer<T> {
     private static final ThreadLocal<Kryo> kryoThread = ThreadLocal.withInitial(Kryo::new);
 
+    /**
+     * Constructor
+     */
     public KryoSerializer() {}
 
+    /**
+     * Constructor
+     * Uses classType to optimize serialization/deserialization through pre processing
+     *
+     * @param classType the object type to serialize
+     */
     public KryoSerializer(Class<T> classType) {
         kryoThread.get().register(classType);
     }
 
+    /**
+     * Serialize an object into a byte array
+     *
+     * @param object the object to serialize
+     * @return the serialized byte array
+     */
     @Override
     public byte[] serialize(T object) {
         ByteArrayOutputStream bytes;
@@ -32,6 +53,12 @@ public class KryoSerializer<T> implements ByteSerializer<T> {
         return bytes.toByteArray();
     }
 
+    /**
+     * Deserialize bytes into an object
+     *
+     * @param bytes the bytes to deserialize
+     * @return the deserialized object
+     */
     @Override
     @SuppressWarnings("unchecked")
     public T deserialize(byte[] bytes) {

@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.function.Consumer;
 
 /**
- * Iterate through a memory allocation
+ * Iterate through a memory block allocation
  *
  * @author micha
  * @param <T> the type of object stored
@@ -14,9 +14,9 @@ public final class MemoryBlockIterator<T> implements Iterator<T> {
     private int index = 0;
 
     /**
-     * Create a new memory iterator
+     * Constructor
      *
-     * @param memory the memory to iterate through
+     * @param memory the memory block to iterate through
      */
     public MemoryBlockIterator(MemoryBlock<T> memory) {
         this.memory = memory;

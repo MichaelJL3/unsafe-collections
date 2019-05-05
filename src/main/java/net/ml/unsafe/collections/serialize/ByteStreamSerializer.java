@@ -3,22 +3,22 @@ package net.ml.unsafe.collections.serialize;
 import java.io.*;
 
 /**
- * Byte stream serializer
+ * ByteStream byte serializer
  *
  * @author micha
- * @param <O> the object to serialize/deserialize
+ * @param <T> the type of object to serialize
  */
-public class ByteStreamSerializer<O> implements ByteSerializer<O> {
+public final class ByteStreamSerializer<T> implements ByteSerializer<T> {
     /**
-     * Serialize the object to a byte array
+     * Serialize an object into a byte array
      *
      * @param object the object to serialize
-     * @return the byte array representation of the object
+     * @return the serialized byte array
      */
     @Override
-    public byte[] serialize(O object) {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            ObjectOutputStream out = new ObjectOutputStream(bos);
+    public byte[] serialize(T object) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bos)) {
             out.writeObject(object);
             out.flush();
             return bos.toByteArray();
@@ -28,17 +28,17 @@ public class ByteStreamSerializer<O> implements ByteSerializer<O> {
     }
 
     /**
-     * Deserialize the bytes into an object
+     * Deserialize bytes into an object
      *
-     * @param serial the bytes to deserialize
-     * @return the object held in bytes
+     * @param bytes the bytes to deserialize
+     * @return the deserialized object
      */
     @Override
     @SuppressWarnings("unchecked")
-    public O deserialize(byte[] serial) {
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(serial)) {
-            ObjectInputStream in = new ObjectInputStream(bis);
-            return (O) in.readObject();
+    public T deserialize(byte[] bytes) {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+            ObjectInputStream in = new ObjectInputStream(bis)) {
+            return (T) in.readObject();
         } catch (IOException | ClassNotFoundException ex) {
             return null;
         }

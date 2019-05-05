@@ -1,26 +1,69 @@
 package net.ml.unsafe.collections.memory;
 
 /**
- * Managed memory interface
+ * Memory interface
  *
- * Manages chunks of memory of the associated model
+ * Manages chunks of memory
  *
  * @author micha
- * @param <T> the type of object to manage the memory of
  */
 public interface Memory {
-    //allocate memory
+    /**
+     * Allocate memory
+     *
+     * @param size the number of bytes to allocate
+     * @return the start address of the allocated memory
+     */
     long malloc(int size);
-    //reallocate memory
+
+    /**
+     * Increase the size of a memory allocation
+     *
+     * @param address the address of the original memory allocation
+     * @param size the number of bytes to
+     * @return the address of the increased allocation
+     */
     long realloc(long address, int size);
-    //free the memory chunk
+
+    /**
+     * Release the allocated memory
+     *
+     * @param address the address to release
+     */
     void free(long address);
-    //place the object into the specified segment
+
+    /**
+     * Place the bytes into memory
+     *
+     * @param address the address to store the bytes
+     * @param bytes the bytes to store
+     */
     void put(long address, byte[] bytes);
-    //swap two objects by the block indexes
+
+    /**
+     * Swap the bytes of two addresses
+     *
+     * @param addressA the first address in memory
+     * @param addressB the second address in memory
+     * @param size the number of bytes to swap
+     */
     void swap(long addressA, long addressB, int size);
-    //copy one object block into another
+
+    /**
+     * Copy the bytes of one address into another
+     *
+     * @param addressA the address to copy from
+     * @param addressB the address to copy to
+     * @param size the number of bytes to copy
+     */
     void copy(long addressA, long addressB, int size);
-    //get the object at the block id
+
+    /**
+     * Get the bytes at the address
+     *
+     * @param address the start address of the bytes
+     * @param size the number of bytes to retrieve
+     * @return the bytes retrieved
+     */
     byte[] get(long address, int size);
 }

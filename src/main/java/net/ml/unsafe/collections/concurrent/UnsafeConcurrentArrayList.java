@@ -1,8 +1,7 @@
 package net.ml.unsafe.collections.concurrent;
 
 import net.ml.unsafe.collections.list.UnsafeArrayList;
-import net.ml.unsafe.collections.memory.MemoryBlock;
-import net.ml.unsafe.collections.memory.UnsafeConcurrentMemoryBlock;
+import net.ml.unsafe.collections.memory.ConcurrentMemoryBlock;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,8 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UnsafeConcurrentArrayList<T> extends UnsafeArrayList<T> {
     private AtomicInteger size = new AtomicInteger(0);
 
-    public UnsafeConcurrentArrayList(MemoryBlock<T> memory) {
-        super(new UnsafeConcurrentMemoryBlock<>(memory));
+    public UnsafeConcurrentArrayList(ConcurrentMemoryBlock<T> memory) {
+        super(memory);
     }
 
     /**

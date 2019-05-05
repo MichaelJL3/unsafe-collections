@@ -2,6 +2,7 @@ package net.ml.unsafe.collections.list;
 
 import net.ml.unsafe.collections.memory.*;
 import java.util.AbstractList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 /**
@@ -10,7 +11,7 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the type to store in the arraylist
  */
-public class UnsafeArrayList<T> extends AbstractList<T> {
+public class UnsafeArrayList<T> extends AbstractList<T> implements List<T> {
     private final MemoryBlock<T> memory;
     private int size = 0;
 

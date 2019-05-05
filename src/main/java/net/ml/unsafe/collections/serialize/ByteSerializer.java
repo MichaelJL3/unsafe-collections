@@ -1,9 +1,11 @@
 package net.ml.unsafe.collections.serialize;
 
 /**
- * A serializer interface for byte serialization
+ * Byte serializer interface
+ *
+ * Serialize and deserialize objects into byte arrays
  *
  * @author micha
- * @param <O> the object to serialize
+ * @param <I> the serialized input type
  */
-public interface ByteSerializer<O> extends Serializer<byte[], O> { }
+public interface ByteSerializer<I> extends Serializer<I, byte[]> {}

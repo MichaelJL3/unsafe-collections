@@ -3,7 +3,7 @@ package net.ml.unsafe.collections.list;
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.UnsafeMemory;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
-import net.ml.unsafe.collections.serialize.KryoSerializer;
+import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 
 import java.util.AbstractList;
 
@@ -15,11 +15,16 @@ import java.util.AbstractList;
  */
 public class UnsafeLinkedList<T> extends AbstractList<T> {
     private final Memory memory = new UnsafeMemory();
-    private final ByteSerializer<UnsafeNode> serializer = new KryoSerializer<>(UnsafeNode.class);
+    private final ByteSerializer<UnsafeNode> serializer = ByteSerializerFactory.getDefaultSerializer();
 
     private final UnsafeNode head = new UnsafeNode();
 
     private int size = 0;
+    private final int classSize;
+
+    public UnsafeLinkedList(Class<T> type) {
+        classSize = 0;
+    }
 
     /**
      * Get the object at the specified index

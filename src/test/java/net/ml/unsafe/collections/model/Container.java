@@ -27,8 +27,8 @@ public class Container<T> implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         Container<?> container = (Container<?>) o;
         return x == container.x &&
-                y.equals(container.y) &&
-                z.equals(container.z);
+                y != null ? y.equals(container.y) : container.y != null &&
+                z != null ? z.equals(container.z) : container.z != null;
     }
 
     @Override

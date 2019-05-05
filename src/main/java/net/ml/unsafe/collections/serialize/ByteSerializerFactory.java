@@ -1,7 +1,5 @@
 package net.ml.unsafe.collections.serialize;
 
-import java.io.Serializable;
-
 /**
  * Byte serializer factory
  *
@@ -12,13 +10,11 @@ public final class ByteSerializerFactory {
      * Get a byte serializer
      *
      * @param type the type of serializer to retrieve
-     * @param <O> the object type to serialize
+     * @param <T> the object type to serialize
      * @return the byte serializer
      */
-    public static <O> ByteSerializer<O> getSerializer(ByteSerializerType type) {
+    public static <T> ByteSerializer<T> getSerializer(ByteSerializerType type) {
         switch(type) {
-            case BUFFER_STREAM_SERIALIZER:
-                return new ByteStreamBufferSerializer<>();
             case ARRAY_STREAM_SERIALIZER:
                 return new ByteStreamSerializer<>();
             case KRYO_SERIALIZER:
@@ -27,7 +23,13 @@ public final class ByteSerializerFactory {
         }
     }
 
-    public static <O> ByteSerializer<O> getDefaultSerializer() {
+    /**
+     * Get the default byte serializer
+     *
+     * @param <T> the object type to serialize
+     * @return the byte serializer
+     */
+    public static <T> ByteSerializer<T> getDefaultSerializer() {
         return getSerializer(ByteSerializerType.DEFAULT);
     }
 }
