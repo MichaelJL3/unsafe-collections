@@ -20,10 +20,11 @@ public interface Memory {
      * Increase the size of a memory allocation
      *
      * @param address the address of the original memory allocation
+     * @param prevSize the original number of bytes allocated
      * @param size the number of bytes to
      * @return the address of the increased allocation
      */
-    long realloc(long address, int size);
+    long realloc(long address, int prevSize, int size);
 
     /**
      * Release the allocated memory

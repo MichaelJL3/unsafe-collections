@@ -21,7 +21,7 @@ public class MemoryTests {
     @Test
     public void reallocationTest() {
         long addr = memory.malloc(Integer.BYTES);
-        long newAddr = memory.realloc(addr, Integer.BYTES * 3);
+        long newAddr = memory.realloc(addr, Integer.BYTES, Integer.BYTES * 3);
         log.info("{} -> {}", addr, newAddr);
 
         Assert.assertTrue(addr != newAddr);

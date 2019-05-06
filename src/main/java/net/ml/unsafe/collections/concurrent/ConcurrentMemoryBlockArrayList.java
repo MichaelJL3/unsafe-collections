@@ -1,20 +1,20 @@
 package net.ml.unsafe.collections.concurrent;
 
-import net.ml.unsafe.collections.list.UnsafeArrayList;
+import net.ml.unsafe.collections.list.MemoryBlockArrayList;
 import net.ml.unsafe.collections.memory.ConcurrentMemoryBlock;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * ArrayList using unsafe memory allocation
+ * Thread safe arrayList
  *
  * @author micha
  * @param <T> the type to store in the arraylist
  */
-public class UnsafeConcurrentArrayList<T> extends UnsafeArrayList<T> {
+public class ConcurrentMemoryBlockArrayList<T> extends MemoryBlockArrayList<T> {
     private AtomicInteger size = new AtomicInteger(0);
 
-    public UnsafeConcurrentArrayList(ConcurrentMemoryBlock<T> memory) {
+    public ConcurrentMemoryBlockArrayList(ConcurrentMemoryBlock<T> memory) {
         super(memory);
     }
 

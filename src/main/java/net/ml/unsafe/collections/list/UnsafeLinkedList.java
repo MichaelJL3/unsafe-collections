@@ -1,6 +1,7 @@
 package net.ml.unsafe.collections.list;
 
 import net.ml.unsafe.collections.memory.Memory;
+import net.ml.unsafe.collections.memory.Reference;
 import net.ml.unsafe.collections.memory.UnsafeMemory;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
@@ -8,156 +9,112 @@ import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 import java.util.AbstractList;
 
 /**
- * ArrayList using unsafe memory allocation
+ * MemoryBlockArrayList using unsafe memory allocation
  *
  * @author micha
  * @param <T> the type to store in the linkedlist
  */
 public class UnsafeLinkedList<T> extends AbstractList<T> {
     private final Memory memory = new UnsafeMemory();
-    private final ByteSerializer<UnsafeNode> serializer = ByteSerializerFactory.getDefaultSerializer();
+    private final ByteSerializer<Node> serializer = ByteSerializerFactory.getDefaultSerializer();
 
-    private final UnsafeNode head = new UnsafeNode();
+    private final Node head = new Node();
 
     private int size = 0;
-    private final int classSize;
 
-    public UnsafeLinkedList(Class<T> type) {
-        classSize = 0;
-    }
-
-    /**
-     * Get the object at the specified index
-     *
-     * @param index the index to retrieve
-     * @return the object at the index
-     *
-     * @throws IndexOutOfBoundsException accessing index outside of the linked list
-    */
     @Override
     public T get(int index) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
 
-        UnsafeNode node = head;
+        Node node = head;
         for (int i = 0; i <= index; ++i) {
-            node = serializer.deserialize(memory.get(node.next, classSize));
+            node = serializer.deserialize(get(node.next));
         }
 
         return node.value;
     }
 
-    /**
-     * Set the object in the specified index of the list
-     *
-     * @param index the index to set the value of
-     * @param element the element to set
-     * @return the element replaced
-     *
-     * @throws IndexOutOfBoundsException accessing index outside of the linked list
-     */
+    private byte[] get(Reference ref) {
+        return memory.get(ref.addr, ref.length);
+    }
+
     @Override
     public T set(int index, T element) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
 
-        UnsafeNode node = head;
-        UnsafeNode prev = head;
+        Node node = head;
+        Node prev = head;
         for (int i = 0; i <= index; ++i) {
             prev = node;
-            node = serializer.deserialize(memory.get(node.next, classSize));
+            node = serializer.deserialize(get(node.next));
         }
 
         T oldValue = node.value;
         node.value = element;
-        memory.put(prev.next, serializer.serialize(node));
+        memory.put(prev.next.addr, serializer.serialize(node));
         return oldValue;
     }
 
-    /**
-     * Add a new element to the list
-     *
-     * Causes a shift of the element if not at the end
-     *
-     * @param index the index to insert at
-     * @param element the element to insert
-     *
-     * @throws IndexOutOfBoundsException attempting to add past the end of the list
-     */
     @Override
     public void add(int index, T element) {
         if (index > size || index < 0) throw new IndexOutOfBoundsException();
 
-        UnsafeNode node = head;
-        UnsafeNode prev = head;
-        UnsafeNode newNode = new UnsafeNode(element);
+        Node node = head;
+        Node prev = head;
+        Node newNode = new Node(element);
         for (int i = 0; i <= index; ++i) {
             prev = node;
-            node = serializer.deserialize(memory.get(node.next, classSize));
+            node = serializer.deserialize(get(node.next));
         }
 
-        long addr = memory.malloc(classSize);
         newNode.next = node.next;
-        node.next = addr;
-        memory.put(prev.next, serializer.serialize(node));
+        byte[] newNodeBytes = serializer.serialize(node);
+        long addr = memory.malloc(newNodeBytes.length);
+
+        node.next = new Reference(addr, newNodeBytes.length);
+        memory.put(prev.next.addr, newNodeBytes);
         memory.put(addr, serializer.serialize(newNode));
         ++size;
     }
 
-    /**
-     * Remove the element at the specified index
-     *
-     * Causes the other elements to shift if not at the end
-     *
-     * @param index the index to remove
-     * @return the removed element
-     *
-     * @throws IndexOutOfBoundsException accessing index outside of the linked list
-     */
     @Override
     public T remove(int index) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
 
-        UnsafeNode node = head;
-        UnsafeNode prev = head;
-        UnsafeNode prevprev = head;
+        Node node = head;
+        Node prev = head;
+        Node prevprev = head;
         for (int i = 0; i <= index; ++i) {
             prevprev = prev;
             prev = node;
-            node = serializer.deserialize(memory.get(node.next, classSize));
+            node = serializer.deserialize(get(node.next));
         }
 
-        long addr = prev.next;
+        long addr = prev.next.addr;
         prev.next = node.next;
         T oldVal = node.value;
 
         memory.free(addr);
-        memory.put(prevprev.next, serializer.serialize(prev));
+        memory.put(prevprev.next.addr, serializer.serialize(prev));
 
         --size;
 
         return oldVal;
     }
 
-    /**
-     * Get the number of items in the linkedlist
-     *
-     * @return the number of items in the linkedlist
-     */
     @Override
     public int size() {
         return size;
     }
 
-    /**
-     * Clear the contents of the list
-     */
     @Override
     public void clear() {
-        UnsafeNode node = head;
+        Node node = head;
         long addr;
 
         for (int i = 0; i < size; ++i) {
-            addr = node.next;
-            node = serializer.deserialize(memory.get(addr, classSize));
+            addr = node.next.addr;
+            node = serializer.deserialize(get(node.next));
             memory.free(addr);
         }
 
@@ -168,19 +125,19 @@ public class UnsafeLinkedList<T> extends AbstractList<T> {
         return index >= size || index < 0;
     }
 
-    private class UnsafeNode {
-        UnsafeNode() {}
+    private class Node {
+        Node() {}
 
-        UnsafeNode(T value) {
-            this(value, 0);
+        Node(T value) {
+            this(value, null);
         }
 
-        UnsafeNode(T value, long next) {
+        Node(T value, Reference next) {
             this.value = value;
             this.next = next;
         }
 
         T value;
-        long next;
+        Reference next;
     }
 }

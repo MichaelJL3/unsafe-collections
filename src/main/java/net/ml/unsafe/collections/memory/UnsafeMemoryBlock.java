@@ -60,11 +60,16 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
      * Allocate memory for n objects using unsafe
      *
      * @param capacity the number of objects to allocate memory for
+     *
+     * @throws IllegalArgumentException attempting to allocate negative bytes
+     * @throws OutOfMemoryError attempting to allocate more memory then possible
      */
     @Override
     public void malloc(int capacity) {
-        //deallocate used memory
         if (capacity <= 0) throw new IllegalArgumentException();
+        if (capacity > MAXIMUM_CAPACITY) throw new OutOfMemoryError();
+
+        //deallocate memory if used
         if (address != -1) free();
 
         address = memory.malloc(capacity * classSize);
@@ -75,14 +80,18 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
      * Increase memory allocation while preserving existing allocations data using unsafe
      *
      * @param capacity the number of objects to allocate memory for
+     *
+     * @throws IllegalArgumentException attempting to allocate negative bytes
+     * @throws OutOfMemoryError attempting to allocate more memory then possible
      */
     @Override
-    public void realloc(int  capacity) {
-        if (capacity <= 0 || capacity > MAXIMUM_CAPACITY) throw new IllegalArgumentException();
+    public void realloc(int capacity) {
+        if (capacity < 0) throw new IllegalArgumentException();
+        if (capacity > MAXIMUM_CAPACITY) throw new OutOfMemoryError();
 
         address = (address == -1) ?
                 memory.malloc(capacity * classSize) :
-                memory.realloc(address, capacity * classSize);
+                memory.realloc(address, this.capacity * classSize, capacity * classSize);
         this.capacity = capacity;
     }
 

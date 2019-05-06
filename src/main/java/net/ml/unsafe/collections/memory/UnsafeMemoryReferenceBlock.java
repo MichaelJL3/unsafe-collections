@@ -151,39 +151,6 @@ public final class UnsafeMemoryReferenceBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Reference holds address and length in bytes of object
-     *
-     * @author micha
-     */
-    private static class Reference {
-        private static final int WORD_SIZE = Long.BYTES;
-        private static final int LEN_SIZE = Integer.BYTES;
-
-        /**
-         * Constructor
-         *
-         * @param addr address in memory
-         * @param length length in bytes
-         */
-        Reference(long addr, int length) {
-            this.addr = addr;
-            this.length = length;
-        }
-
-        /**
-         * Size of a reference
-         *
-         * @return references size
-         */
-        static int size() {
-            return WORD_SIZE + LEN_SIZE;
-        }
-
-        final long addr;
-        final int length;
-    }
-
-    /**
      * Serializer for references
      *
      * @author micha
