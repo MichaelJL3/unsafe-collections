@@ -2,10 +2,13 @@ package net.ml.unsafe.collections.memory.blocks;
 
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryLinkedNode;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
+import net.ml.unsafe.collections.memory.blocks.models.Reference;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
+import net.ml.unsafe.collections.serialize.ReferenceSerializer;
 
-import java.nio.ByteBuffer;
 import java.util.stream.IntStream;
 
 /**
@@ -17,45 +20,31 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
-    private static final int DEFAULT_INIT_CAPACITY = 16;
-
+public final class MemoryLinkedReferenceBlock<T> implements MemoryBlock<T> {
     private final Memory memory;
     //memory block for references
-    private final MemoryBlock<Reference> refMemory;
+    private final MemoryBlock<MemoryNode<Reference>> refMemory;
     private final ByteSerializer<T> serializer;
-
-    /**
-     * Constructor
-     * Uses default initial capacity
-     * Uses byte serializer factory default serializer
-     */
-    public MemoryReferenceBlock() {
-        this(DEFAULT_INIT_CAPACITY);
-    }
 
     /**
      * Constructor
      * Uses byte serializer factory default serializer
      * Uses memory factory default
-     *
-     * @param capacity number of objects to initially allocate for
      */
-    public MemoryReferenceBlock(int capacity) {
-        this(capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
+    public MemoryLinkedReferenceBlock() {
+        this(ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
     }
 
     /**
      * Constructor
      *
-     * @param capacity number of objects to initially allocate for
      * @param serializer byte serializer
      */
-    public MemoryReferenceBlock(int capacity, ByteSerializer<T> serializer, Memory memory) {
+    public MemoryLinkedReferenceBlock(ByteSerializer<T> serializer, Memory memory) {
         this.serializer = serializer;
         this.memory = memory;
         //create an inner block with special serializer for references
-        this.refMemory = new MemoryArrayBlock<>(Reference.size(), capacity, new ReferenceSerializer());
+        this.refMemory = new MemorySingleLinkedBlock<>(Reference.size(), new ReferenceSerializer());
     }
 
     /**
@@ -64,7 +53,7 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
     @Override
     public void free() {
         IntStream.range(0, size()).forEach(i -> {
-            Reference ref = refMemory.get(i);
+            Reference ref = refMemory.get(i).getValue();
             if (ref.addr > 0) memory.free(ref.addr);
         });
 
@@ -90,7 +79,7 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public void copy(int indexA, int indexB) {
-        Reference refB = refMemory.get(indexB);
+        Reference refB = refMemory.get(indexB).getValue();
         if (refB.addr != 0) memory.free(refB.addr);
 
         put(indexB, get(indexA));
@@ -134,7 +123,7 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public T get(int index) {
-        Reference ref = refMemory.get(index);
+        Reference ref = refMemory.get(index).getValue();
         return serializer.deserialize(memory.get(ref.addr, ref.length));
     }
 
@@ -150,7 +139,7 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
         long addr = memory.malloc(bytes.length);
         memory.put(addr, bytes);
 
-        refMemory.put(index, new Reference(addr, bytes.length));
+        refMemory.put(index, new MemoryLinkedNode<>(0, 0, 0, new Reference(addr, bytes.length)));
     }
 
     /**
@@ -162,8 +151,15 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public T replace(int index, T o) {
-        T old = get(index);
-        put(index, o);
+        byte[] bytes = serializer.serialize(o);
+        long addr = memory.malloc(bytes.length);
+        memory.put(addr, bytes);
+
+        Reference ref = refMemory.get(index).getValue();
+        T old = serializer.deserialize(memory.get(ref.addr, ref.length));
+        memory.free(ref.addr);
+
+        refMemory.replace(index, new MemoryLinkedNode<>(0, 0, 0, new Reference(addr, bytes.length)));
         return old;
     }
 
@@ -177,74 +173,5 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
     @Override
     public T remove(int index) {
         throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Reference holds address and length in bytes of object
-     *
-     * @author micha
-     */
-    private static final class Reference {
-        private static final int WORD_SIZE = Long.BYTES;
-        private static final int LEN_SIZE = Integer.BYTES;
-
-        /**
-         * Constructor
-         *
-         * @param addr address in memory
-         * @param length length in bytes
-         */
-        private Reference(long addr, int length) {
-            this.addr = addr;
-            this.length = length;
-        }
-
-        /**
-         * Size of a reference
-         *
-         * @return references size
-         */
-        private static int size() {
-            return WORD_SIZE + LEN_SIZE;
-        }
-
-        private final long addr;
-        private final int length;
-    }
-
-    /**
-     * Serializer for references
-     *
-     * @author micha
-     */
-    private static final class ReferenceSerializer implements ByteSerializer<Reference> {
-        private final ByteBuffer byteBuffer = ByteBuffer.allocate(Reference.size());
-
-        /**
-         * Serialize a reference to a byte array
-         *
-         * @param ref the reference to serialize
-         * @return the bytes
-         */
-        @Override
-        public byte[] serialize(Reference ref) {
-            byteBuffer.clear();
-            byteBuffer.putLong(0, ref.addr);
-            byteBuffer.putInt(Reference.WORD_SIZE, ref.length);
-            return byteBuffer.array();
-        }
-
-        /**
-         * Deserialize a byte array to a reference object
-         *
-         * @param serial the bytes to deserialize
-         * @return the reference
-         */
-        @Override
-        public Reference deserialize(byte[] serial) {
-            byteBuffer.clear();
-            byteBuffer.put(serial);
-            return new Reference(byteBuffer.getLong(0), byteBuffer.getInt(Reference.WORD_SIZE));
-        }
     }
 }

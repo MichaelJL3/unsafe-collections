@@ -1,7 +1,7 @@
 package net.ml.unsafe.collections.list;
 
-import net.ml.unsafe.collections.memory.blocks.nodes.MemoryLinkedNode;
-import net.ml.unsafe.collections.memory.blocks.nodes.MemoryNode;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryLinkedNode;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.AbstractList;

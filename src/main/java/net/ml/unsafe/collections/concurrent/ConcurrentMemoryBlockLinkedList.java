@@ -1,7 +1,7 @@
 package net.ml.unsafe.collections.concurrent;
 
 import net.ml.unsafe.collections.list.MemoryBlockLinkedList;
-import net.ml.unsafe.collections.memory.blocks.nodes.MemoryNode;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
 import net.ml.unsafe.collections.memory.blocks.ConcurrentMemoryBlock;
 
 /**

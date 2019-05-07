@@ -2,8 +2,8 @@ package net.ml.unsafe.collections.memory.blocks;
 
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
-import net.ml.unsafe.collections.memory.blocks.nodes.MemoryLinkedNode;
-import net.ml.unsafe.collections.memory.blocks.nodes.MemoryNode;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryLinkedNode;
+import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 

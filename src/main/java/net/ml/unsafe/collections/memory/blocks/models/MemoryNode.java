@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections.memory.blocks.nodes;
+package net.ml.unsafe.collections.memory.blocks.models;
 
 /**
  * Memory node interface
