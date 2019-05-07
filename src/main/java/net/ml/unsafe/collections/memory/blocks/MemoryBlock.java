@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -42,6 +42,23 @@ public interface MemoryBlock<T> extends Iterable<T>, AutoCloseable {
      * @param o the object to store
      */
     void put(int index, T o);
+
+    /**
+     * Replace the object at the index
+     *
+     * @param index the index to replace
+     * @param o the value to replace with
+     * @return the replaced object
+     */
+    T replace(int index, T o);
+
+    /**
+     * Remove the object at the index
+     *
+     * @param index the index to remove
+     * @return the removed object
+     */
+    T remove(int index);
 
     /**
      * Release allocated memory

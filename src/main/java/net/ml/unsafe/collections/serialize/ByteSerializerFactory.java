@@ -6,6 +6,8 @@ package net.ml.unsafe.collections.serialize;
  * @author micha
  */
 public final class ByteSerializerFactory {
+    private ByteSerializerFactory() {}
+
     /**
      * Get a byte serializer
      *
@@ -29,7 +31,7 @@ public final class ByteSerializerFactory {
      * @param <T> the object type to serialize
      * @return the byte serializer
      */
-    public static <T> ByteSerializer<T> getDefaultSerializer() {
+    public static <T> ByteSerializer<T> getDefault() {
         return getSerializer(ByteSerializerType.DEFAULT);
     }
 }

@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
 /**
  * Thread safe memory interface

@@ -1,4 +1,6 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
+
+import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.Iterator;
 import java.util.function.Consumer;

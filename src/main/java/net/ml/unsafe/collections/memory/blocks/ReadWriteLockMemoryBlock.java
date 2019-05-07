@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -29,8 +29,11 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
     @Override
     public void malloc(int capacity) {
         lock.writeLock().lock();
-        memory.malloc(capacity);
-        lock.writeLock().unlock();
+        try {
+            memory.malloc(capacity);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -41,8 +44,11 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
     @Override
     public void realloc(int capacity) {
         lock.writeLock().lock();
-        memory.realloc(capacity);
-        lock.writeLock().unlock();
+        try {
+            memory.realloc(capacity);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -51,8 +57,11 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
     @Override
     public void free() {
         lock.writeLock().lock();
-        memory.free();
-        lock.writeLock().unlock();
+        try {
+            memory.free();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -63,9 +72,15 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
      */
     @Override
     public T get(int index) {
+        T object;
+
         lock.readLock().lock();
-        T object = memory.get(index);
-        lock.readLock().unlock();
+        try {
+            object = memory.get(index);
+        } finally {
+            lock.readLock().unlock();
+        }
+
         return object;
     }
 
@@ -78,8 +93,43 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
     @Override
     public void put(int index, T o) {
         lock.writeLock().lock();
-        memory.put(index, o);
-        lock.writeLock().unlock();
+        try {
+            memory.put(index, o);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Replace object at the index
+     *
+     * @param index the index to replace
+     * @param o the value to replace with
+     * @return the replaced object
+     */
+    @Override
+    public T replace(int index, T o) {
+        return memory.replace(index, o);
+    }
+
+    /**
+     * Remove the object at the index
+     *
+     * @param index the index to remove
+     * @return the removed object
+     */
+    @Override
+    public T remove(int index) {
+        T old;
+
+        lock.writeLock().lock();
+        try {
+            old = memory.remove(index);
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+        return old;
     }
 
     /**
@@ -111,9 +161,15 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
      */
     @Override
     public int size() {
+        int size;
+
         lock.readLock().lock();
-        int size = memory.size();
-        lock.readLock().unlock();
+        try {
+            size = memory.size();
+        } finally {
+            lock.readLock().unlock();
+        }
+
         return size;
     }
 }

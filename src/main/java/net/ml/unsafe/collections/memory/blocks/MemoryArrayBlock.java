@@ -1,21 +1,22 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
+import net.ml.unsafe.collections.memory.Memory;
+import net.ml.unsafe.collections.memory.MemoryFactory;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 
 /**
- * Manages a chunk of memory as blocks of objects using unsafe
+ * Manages a chunk of memory as blocks of objects
  *
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
+public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;
     private static final int MAXIMUM_CAPACITY = 1 << 30;
 
-    private static final Memory memory = new UnsafeMemory();
-
     private final ByteSerializer<T> serializer;
+    private final Memory memory;
     private final int classSize;
 
     private long address = -1;
@@ -28,19 +29,20 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
      *
      * @param classSize number of bytes per object
      */
-    public UnsafeMemoryBlock(int classSize) {
+    public MemoryArrayBlock(int classSize) {
         this(classSize, DEFAULT_INIT_CAPACITY);
     }
 
     /**
      * Constructor
      * Uses byte serializer factory default serializer
+     * Uses memory factory default
      *
      * @param classSize number of bytes per object
      * @param capacity number of objects to initially allocate for
      */
-    public UnsafeMemoryBlock(int classSize, int capacity) {
-        this(classSize, capacity, ByteSerializerFactory.getDefaultSerializer());
+    public MemoryArrayBlock(int classSize, int capacity) {
+        this(classSize, capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
     }
 
     /**
@@ -50,14 +52,27 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
      * @param capacity number of objects to initially allocate for
      * @param serializer byte serializer
      */
-    public UnsafeMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
-        this.classSize = classSize;
-        this.serializer = serializer;
+    public MemoryArrayBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
+        this(classSize, capacity, serializer, MemoryFactory.getDefault());
         malloc(capacity);
     }
 
     /**
-     * Allocate memory for n objects using unsafe
+     * Constructor
+     *
+     * @param classSize number of bytes per object
+     * @param capacity number of objects to initially allocate for
+     * @param serializer byte serializer
+     */
+    public MemoryArrayBlock(int classSize, int capacity, ByteSerializer<T> serializer, Memory memory) {
+        this.classSize = classSize;
+        this.serializer = serializer;
+        this.memory = memory;
+        malloc(capacity);
+    }
+
+    /**
+     * Allocate memory for n objects
      *
      * @param capacity the number of objects to allocate memory for
      *
@@ -77,7 +92,7 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Increase memory allocation while preserving existing allocations data using unsafe
+     * Increase memory allocation while preserving existing allocations data
      *
      * @param capacity the number of objects to allocate memory for
      *
@@ -96,7 +111,7 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Release allocated memory using unsafe
+     * Release allocated memory
      */
     @Override
     public void free() {
@@ -108,7 +123,7 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Swap the objects at the two indexes in memory using unsafe
+     * Swap the objects at the two indexes in memory
      *
      * @param indexA the index of the first object
      * @param indexB the index of the second object
@@ -121,7 +136,7 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Copy the object from one index in memory to another using unsafe
+     * Copy the object from one index in memory to another
      *
      * @param indexA the index of the object to copy
      * @param indexB the index to copy the object to
@@ -132,7 +147,7 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Get the object stored at the index from memory using unsafe
+     * Get the object stored at the index from memory
      *
      * @param index the index in memory
      * @return the object retrieved
@@ -144,7 +159,7 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     }
 
     /**
-     * Store the object in memory at the index using unsafe
+     * Store the object in memory at the index
      *
      * @param index the index in the block to store
      * @param o the object to store
@@ -152,6 +167,32 @@ public final class UnsafeMemoryBlock<T> implements MemoryBlock<T> {
     @Override
     public void put(int index, T o) {
         memory.put(getMemoryAddress(index), serializer.serialize(o));
+    }
+
+    /**
+     * Replace the object at the index
+     *
+     * @param index the index to replace
+     * @param o the value to replace with
+     * @return the replaced object
+     */
+    @Override
+    public T replace(int index, T o) {
+        T old = get(index);
+        put(index, o);
+        return old;
+    }
+
+    /**
+     * Remove the object at the index
+     *
+     * @param index the index to remove
+     * @return null
+     * @throws UnsupportedOperationException cannot remove from array
+     */
+    @Override
+    public T remove(int index) {
+        throw new UnsupportedOperationException();
     }
 
     /**

@@ -1,6 +1,9 @@
 package net.ml.unsafe.collections.memory;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
+import net.ml.unsafe.collections.memory.blocks.MemoryReferenceBlock;
+import net.ml.unsafe.collections.memory.blocks.ReadWriteLockMemoryBlock;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,7 +16,7 @@ public class ConcurrentMemoryBlockTests {
     public void concurrentReadTest() {
         int size = 3;
 
-        try (MemoryBlock<Integer> block = new UnsafeMemoryReferenceBlock<>(size);
+        try (MemoryBlock<Integer> block = new MemoryReferenceBlock<>(size);
              MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
             memory.put(0, 1);
             memory.put(1, 2);
@@ -34,7 +37,7 @@ public class ConcurrentMemoryBlockTests {
     public void concurrentWriteTest() {
         int size = 3;
 
-        try (MemoryBlock<Integer> block = new UnsafeMemoryReferenceBlock<>(size);
+        try (MemoryBlock<Integer> block = new MemoryReferenceBlock<>(size);
              MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
             Runnable writer = () -> {
                 memory.put(0, 1);
@@ -59,7 +62,7 @@ public class ConcurrentMemoryBlockTests {
     public void concurrentReadWriteTest() {
         int size = 3;
 
-        try (MemoryBlock<Integer> block = new UnsafeMemoryReferenceBlock<>(size);
+        try (MemoryBlock<Integer> block = new MemoryReferenceBlock<>(size);
              MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
             memory.put(0, 0);
             memory.put(1, 0);

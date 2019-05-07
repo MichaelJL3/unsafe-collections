@@ -1,6 +1,6 @@
 package net.ml.unsafe.collections.list;
 
-import net.ml.unsafe.collections.memory.MemoryBlock;
+import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.AbstractList;
 import java.util.List;
@@ -29,10 +29,7 @@ public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T> 
     @Override
     public T set(int index, T element) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-
-        T old = memory.get(index);
-        memory.put(index, element);
-        return old;
+        return memory.replace(index, element);
     }
 
     @Override

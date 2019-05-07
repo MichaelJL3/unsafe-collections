@@ -1,5 +1,9 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
+import net.ml.unsafe.collections.memory.Memory;
+import net.ml.unsafe.collections.memory.MemoryFactory;
+import net.ml.unsafe.collections.memory.blocks.MemoryArrayBlock;
+import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 
@@ -15,11 +19,10 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class UnsafeMemoryReferenceBlock<T> implements MemoryBlock<T> {
+public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;
 
-    private static final Memory memory = new UnsafeMemory();
-
+    private final Memory memory;
     //memory block for references
     private final MemoryBlock<Reference> refMemory;
     private final ByteSerializer<T> serializer;
@@ -29,18 +32,19 @@ public final class UnsafeMemoryReferenceBlock<T> implements MemoryBlock<T> {
      * Uses default initial capacity
      * Uses byte serializer factory default serializer
      */
-    public UnsafeMemoryReferenceBlock() {
+    public MemoryReferenceBlock() {
         this(DEFAULT_INIT_CAPACITY);
     }
 
     /**
      * Constructor
      * Uses byte serializer factory default serializer
+     * Uses memory factory default
      *
      * @param capacity number of objects to initially allocate for
      */
-    public UnsafeMemoryReferenceBlock(int capacity) {
-        this(capacity, ByteSerializerFactory.getDefaultSerializer());
+    public MemoryReferenceBlock(int capacity) {
+        this(capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
     }
 
     /**
@@ -49,10 +53,11 @@ public final class UnsafeMemoryReferenceBlock<T> implements MemoryBlock<T> {
      * @param capacity number of objects to initially allocate for
      * @param serializer byte serializer
      */
-    public UnsafeMemoryReferenceBlock(int capacity, ByteSerializer<T> serializer) {
+    public MemoryReferenceBlock(int capacity, ByteSerializer<T> serializer, Memory memory) {
         this.serializer = serializer;
+        this.memory = memory;
         //create an inner block with special serializer for references
-        this.refMemory = new UnsafeMemoryBlock<>(Reference.size(), capacity, new ReferenceSerializer());
+        this.refMemory = new MemoryArrayBlock<>(Reference.size(), capacity, new ReferenceSerializer());
     }
 
     /**
@@ -151,11 +156,72 @@ public final class UnsafeMemoryReferenceBlock<T> implements MemoryBlock<T> {
     }
 
     /**
+     * Replace the object at the index
+     *
+     * @param index the index to replace
+     * @param o the value to replace with
+     * @return the replaced object
+     */
+    @Override
+    public T replace(int index, T o) {
+        T old = get(index);
+        put(index, o);
+        return old;
+    }
+
+    /**
+     * Remove the object at the index
+     *
+     * @param index the index to remove
+     * @return null
+     * @throws UnsupportedOperationException cannot remove from array
+     */
+    @Override
+    public T remove(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * Reference holds address and length in bytes of object
+     *
+     * @author micha
+     */
+    private static final class Reference {
+        private static final int WORD_SIZE = Long.BYTES;
+        private static final int LEN_SIZE = Integer.BYTES;
+
+        /**
+         * Constructor
+         *
+         * @param addr address in memory
+         * @param length length in bytes
+         */
+        private Reference(long addr, int length) {
+            this.addr = addr;
+            this.length = length;
+        }
+
+        /**
+         * Size of a reference
+         *
+         * @return references size
+         */
+        private static int size() {
+            return WORD_SIZE + LEN_SIZE;
+        }
+
+        private final long addr;
+        private final int length;
+    }
+
+
+    /**
      * Serializer for references
      *
      * @author micha
      */
-    private static class ReferenceSerializer implements ByteSerializer<Reference> {
+    private static final class ReferenceSerializer implements ByteSerializer<Reference> {
         private final ByteBuffer byteBuffer = ByteBuffer.allocate(Reference.size());
 
         /**

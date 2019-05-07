@@ -1,5 +1,7 @@
 package net.ml.unsafe.collections.memory;
 
+import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
+import net.ml.unsafe.collections.memory.blocks.MemoryReferenceBlock;
 import net.ml.unsafe.collections.model.Container;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +12,7 @@ public class MemoryBlockTests {
     @Test
     public void allocationTest() {
         int size = 10;
-        memory = new UnsafeMemoryReferenceBlock<>(size);
+        memory = new MemoryReferenceBlock<>(size);
         Assert.assertEquals(size, memory.size());
 
         memory.free();
@@ -20,7 +22,7 @@ public class MemoryBlockTests {
     @Test
     public void reallocationTest() {
         int origSize = 10;
-        memory = new UnsafeMemoryReferenceBlock<>(origSize);
+        memory = new MemoryReferenceBlock<>(origSize);
         Assert.assertEquals(origSize, memory.size());
 
         int size = 20;
@@ -33,7 +35,7 @@ public class MemoryBlockTests {
 
     @Test
     public void storageTest() {
-        memory = new UnsafeMemoryReferenceBlock<>();
+        memory = new MemoryReferenceBlock<>();
 
         Container<Integer> contentOne = new Container<>();
         Container<Integer> contentTwo = new Container<>();
@@ -51,7 +53,7 @@ public class MemoryBlockTests {
 
     @Test
     public void swapTest() {
-        memory = new UnsafeMemoryReferenceBlock<>();
+        memory = new MemoryReferenceBlock<>();
 
         Container<Integer> contentOne = new Container<>();
         Container<Integer> contentTwo = new Container<>();
@@ -70,7 +72,7 @@ public class MemoryBlockTests {
 
     @Test
     public void copyTest() {
-        memory = new UnsafeMemoryReferenceBlock<>();
+        memory = new MemoryReferenceBlock<>();
 
         Container<Integer> contentOne = new Container<>();
         Container<Integer> contentTwo = new Container<>();

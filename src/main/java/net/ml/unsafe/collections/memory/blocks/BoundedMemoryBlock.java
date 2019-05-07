@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
 /**
  * Decorates memory blocks with safe index boundary checking
@@ -64,6 +64,35 @@ public final class BoundedMemoryBlock<T> implements MemoryBlock<T> {
     public void put(int index, T o) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
         memory.put(index, o);
+    }
+
+    /**
+     * Replace the object at the index
+     *
+     * @param index the index to replace
+     * @param o the value to replace with
+     * @return the replaced object
+     *
+     * @throws IndexOutOfBoundsException accessing memory outside the allocated block
+     */
+    @Override
+    public T replace(int index, T o) {
+        if (outOfBounds(index)) throw new IndexOutOfBoundsException();
+        return memory.replace(index, o);
+    }
+
+    /**
+     * Remove the object at the index
+     *
+     * @param index the index to remove
+     * @return the object removed
+     *
+     * @throws IndexOutOfBoundsException accessing memory outside the allocated block
+     */
+    @Override
+    public T remove(int index) {
+        if (outOfBounds(index)) throw new IndexOutOfBoundsException();
+        return memory.remove(index);
     }
 
     /**
