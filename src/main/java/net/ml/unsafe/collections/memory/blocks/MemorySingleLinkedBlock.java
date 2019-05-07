@@ -9,7 +9,13 @@ import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 
 import java.nio.ByteBuffer;
 
-public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNode<T>> {
+/**
+ * Manages chunks of memory linked as nodes
+ *
+ * @author micha
+ * @param <T> the classType of object to store
+ */
+public final class MemorySingleLinkedBlock<T> implements MemoryBlock<MemoryNode<T>> {
     private static final int WORD_SIZE = Long.BYTES;
 
     private final ByteSerializer<MemoryNode<T>> nodeSerializer = new NodeSerializer();
@@ -20,35 +26,80 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
     private int size = 0;
     private final MemoryNode<T> head = new MemoryLinkedNode<>();
 
-    public MemorySingleLinkNodeBlock(int classSize) {
+    /**
+     * Constructor
+     * Uses byte serializer factory default serializer
+     * Uses memory factory default
+     *
+     * @param classSize number of bytes per object
+     */
+    public MemorySingleLinkedBlock(int classSize) {
         this(classSize, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
     }
 
-    public MemorySingleLinkNodeBlock(int classSize, ByteSerializer<T> serializer) {
+    /**
+     * Constructor
+     * Uses memory factory default
+     *
+     * @param classSize number of bytes per object
+     * @param serializer byte serializer
+     */
+    public MemorySingleLinkedBlock(int classSize, ByteSerializer<T> serializer) {
         this(classSize, serializer, MemoryFactory.getDefault());
     }
 
-    public MemorySingleLinkNodeBlock(int classSize, ByteSerializer<T> serializer, Memory memory) {
+    /**
+     * Constructor
+     *
+     * @param classSize number of bytes per object
+     * @param serializer byte serializer
+     * @param memory the memory wrapper
+     */
+    public MemorySingleLinkedBlock(int classSize, ByteSerializer<T> serializer, Memory memory) {
         this.classSize = classSize;
         this.serializer = serializer;
         this.memory = memory;
     }
 
+    /**
+     * Allocate memory for n objects
+     *
+     * @param capacity the number of objects to allocate memory for
+     * @throws UnsupportedOperationException nodes are allocated on an insertion basis
+     */
     @Override
     public void malloc(int capacity) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Increase memory allocation while preserving existing allocations data
+     *
+     * @param capacity the number of objects to allocate memory for
+     * @throws UnsupportedOperationException nodes are allocated on an insertion basis
+     */
     @Override
     public void realloc(int capacity) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Get the node stored at the index from memory
+     *
+     * @param index the index in memory
+     * @return the node retrieved
+     */
     @Override
     public MemoryNode<T> get(int index) {
         return getUnboundable(index);
     }
 
+    /**
+     * Store the node in memory at the index
+     *
+     * @param index the index in the node list to store
+     * @param node the node to store
+     */
     @Override
     public void put(int index, MemoryNode<T> node) {
         MemoryNode<T> prev = getUnboundable(index - 1);
@@ -65,6 +116,13 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
         ++size;
     }
 
+    /**
+     * Replace the node at the index
+     *
+     * @param index the index to replace
+     * @param o the node to replace with
+     * @return the replaced node
+     */
     @Override
     public MemoryNode<T> replace(int index, MemoryNode<T> o) {
         MemoryNode<T> prev = getUnboundable(index - 1);
@@ -76,6 +134,12 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
         return node;
     }
 
+    /**
+     * Remove the node at the index
+     *
+     * @param index the index to remove
+     * @return the removed node
+     */
     @Override
     public MemoryNode<T> remove(int index) {
         MemoryNode<T> prevRef = getUnboundable(index - 2);
@@ -91,6 +155,9 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
         return node;
     }
 
+    /**
+     * Release allocated nodes
+     */
     @Override
     public void free() {
         MemoryNode<T> node = head;
@@ -103,6 +170,12 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
         size = 0;
     }
 
+    /**
+     * Swap the nodes at the two indexes in memory
+     *
+     * @param indexA the index of the first node
+     * @param indexB the index of the second node
+     */
     @Override
     public void swap(int indexA, int indexB) {
         MemoryNode<T> tmp = get(indexB);
@@ -110,16 +183,34 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
         put(indexA, tmp);
     }
 
+    /**
+     * Copy the node from one index in memory to another
+     *
+     * @param indexA the index of the node to copy
+     * @param indexB the index to copy the node to
+     */
     @Override
     public void copy(int indexA, int indexB) {
         put(indexB, get(indexA));
     }
 
+    /**
+     * Number of blocks allocated in memory
+     *
+     * @return the number of blocks
+     */
     @Override
     public int size() {
         return size;
     }
 
+    /**
+     * Get the node at the index without a minimum bound check
+     * this allow negatives to default to the head
+     *
+     * @param index the index of the node to get
+     * @return the node
+     */
     private MemoryNode<T> getUnboundable(int index) {
         MemoryNode<T> node = head;
 
@@ -130,14 +221,31 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
         return node;
     }
 
+    /**
+     * Get the node after the specified node
+     *
+     * @param node the node to fetch the next of
+     * @return the next node
+     */
     private MemoryNode<T> next(MemoryNode<T> node) {
         byte[] bytes = memory.get(node.getNext(), classSize);
         return nodeSerializer.deserialize(bytes);
     }
 
+    /**
+     * Serializer for singly linked memory nodes
+     *
+     * @author micha
+     */
     private final class NodeSerializer implements ByteSerializer<MemoryNode<T>> {
         private final ByteBuffer byteBuffer = ByteBuffer.allocate(WORD_SIZE + classSize);
 
+        /**
+         * Serialize the node into a byte array
+         *
+         * @param input the node to serialize
+         * @return the node as bytes
+         */
         @Override
         public byte[] serialize(MemoryNode<T> input) {
             byteBuffer.clear();
@@ -147,6 +255,12 @@ public final class MemorySingleLinkNodeBlock<T> implements MemoryBlock<MemoryNod
             return byteBuffer.array();
         }
 
+        /**
+         * Deserialize a byte array into a node object
+         *
+         * @param output the bytes to deserialize
+         * @return the deserialized node
+         */
         @Override
         public MemoryNode<T> deserialize(byte[] output) {
             byteBuffer.clear();

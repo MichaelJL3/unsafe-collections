@@ -6,7 +6,7 @@ import net.ml.unsafe.collections.model.Container;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class MemoryBlockTests {
+public class MemoryArrayBlockTests {
     private MemoryBlock<Container<Integer>> memory;
 
     @Test

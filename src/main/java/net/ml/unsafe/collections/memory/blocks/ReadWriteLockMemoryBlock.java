@@ -109,7 +109,16 @@ public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<
      */
     @Override
     public T replace(int index, T o) {
-        return memory.replace(index, o);
+        T old;
+
+        lock.writeLock().lock();
+        try {
+            old = memory.replace(index, o);
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+        return old;
     }
 
     /**

@@ -47,6 +47,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
 
     /**
      * Constructor
+     * Uses memory factory default
      *
      * @param classSize number of bytes per object
      * @param capacity number of objects to initially allocate for
@@ -63,6 +64,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
      * @param classSize number of bytes per object
      * @param capacity number of objects to initially allocate for
      * @param serializer byte serializer
+     * @param memory the memory wrapper
      */
     public MemoryArrayBlock(int classSize, int capacity, ByteSerializer<T> serializer, Memory memory) {
         this.classSize = classSize;

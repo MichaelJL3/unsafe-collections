@@ -2,8 +2,6 @@ package net.ml.unsafe.collections.memory.blocks;
 
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
-import net.ml.unsafe.collections.memory.blocks.MemoryArrayBlock;
-import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 
@@ -180,8 +178,7 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
     public T remove(int index) {
         throw new UnsupportedOperationException();
     }
-
-
+    
     /**
      * Reference holds address and length in bytes of object
      *
@@ -214,7 +211,6 @@ public final class MemoryReferenceBlock<T> implements MemoryBlock<T> {
         private final long addr;
         private final int length;
     }
-
 
     /**
      * Serializer for references

@@ -4,6 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Node implementation which holds addresses for up to doubly linked elements
+ *
+ * @param <T> the type of object to store in the node
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
