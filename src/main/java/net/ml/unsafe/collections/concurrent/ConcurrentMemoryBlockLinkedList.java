@@ -11,7 +11,7 @@ import net.ml.unsafe.collections.memory.blocks.ConcurrentMemoryBlock;
  * @param <T> the type to store in the linkedlist
  */
 public class ConcurrentMemoryBlockLinkedList<T> extends MemoryBlockLinkedList<T> {
-    public ConcurrentMemoryBlockLinkedList(ConcurrentMemoryBlock<MemoryNode<T>> memory) {
+    public ConcurrentMemoryBlockLinkedList(ConcurrentMemoryBlock<T> memory) {
         super(memory);
     }
 

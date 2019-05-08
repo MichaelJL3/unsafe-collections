@@ -11,7 +11,7 @@ import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
+public final class ArrayMemoryBlock<T> implements MemoryBlock<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;
     private static final int MAXIMUM_CAPACITY = 1 << 30;
 
@@ -29,7 +29,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
      *
      * @param classSize number of bytes per object
      */
-    public MemoryArrayBlock(int classSize) {
+    public ArrayMemoryBlock(int classSize) {
         this(classSize, DEFAULT_INIT_CAPACITY);
     }
 
@@ -41,7 +41,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
      * @param classSize number of bytes per object
      * @param capacity number of objects to initially allocate for
      */
-    public MemoryArrayBlock(int classSize, int capacity) {
+    public ArrayMemoryBlock(int classSize, int capacity) {
         this(classSize, capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
     }
 
@@ -53,7 +53,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
      * @param capacity number of objects to initially allocate for
      * @param serializer byte serializer
      */
-    public MemoryArrayBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
+    public ArrayMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
         this(classSize, capacity, serializer, MemoryFactory.getDefault());
         malloc(capacity);
     }
@@ -66,7 +66,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
      * @param serializer byte serializer
      * @param memory the memory wrapper
      */
-    public MemoryArrayBlock(int classSize, int capacity, ByteSerializer<T> serializer, Memory memory) {
+    public ArrayMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer, Memory memory) {
         this.classSize = classSize;
         this.serializer = serializer;
         this.memory = memory;
@@ -83,7 +83,7 @@ public final class MemoryArrayBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public void malloc(int capacity) {
-        if (capacity <= 0) throw new IllegalArgumentException();
+        if (capacity < 0) throw new IllegalArgumentException();
         if (capacity > MAXIMUM_CAPACITY) throw new OutOfMemoryError();
 
         //deallocate memory if used

@@ -18,9 +18,7 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class MemoryArrayReferenceBlock<T> implements MemoryBlock<T> {
-    private static final int DEFAULT_INIT_CAPACITY = 16;
-
+public final class LinkedReferenceMemoryBlock<T> implements MemoryBlock<T> {
     private final Memory memory;
     //memory block for references
     private final MemoryBlock<Reference> refMemory;
@@ -28,35 +26,23 @@ public final class MemoryArrayReferenceBlock<T> implements MemoryBlock<T> {
 
     /**
      * Constructor
-     * Uses default initial capacity
-     * Uses byte serializer factory default serializer
-     */
-    public MemoryArrayReferenceBlock() {
-        this(DEFAULT_INIT_CAPACITY);
-    }
-
-    /**
-     * Constructor
      * Uses byte serializer factory default serializer
      * Uses memory factory default
-     *
-     * @param capacity number of objects to initially allocate for
      */
-    public MemoryArrayReferenceBlock(int capacity) {
-        this(capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
+    public LinkedReferenceMemoryBlock() {
+        this(ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
     }
 
     /**
      * Constructor
      *
-     * @param capacity number of objects to initially allocate for
      * @param serializer byte serializer
      */
-    public MemoryArrayReferenceBlock(int capacity, ByteSerializer<T> serializer, Memory memory) {
+    public LinkedReferenceMemoryBlock(ByteSerializer<T> serializer, Memory memory) {
         this.serializer = serializer;
         this.memory = memory;
         //create an inner block with special serializer for references
-        this.refMemory = new MemoryArrayBlock<>(Reference.size(), capacity, new ReferenceSerializer());
+        this.refMemory = new SingleLinkedMemoryBlock<>(Reference.size(), new ReferenceSerializer());
     }
 
     /**
@@ -91,10 +77,7 @@ public final class MemoryArrayReferenceBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public void copy(int indexA, int indexB) {
-        Reference refB = refMemory.get(indexB);
-        if (refB.addr != 0) memory.free(refB.addr);
-
-        put(indexB, get(indexA));
+        replace(indexB, get(indexA));
     }
 
     /**
@@ -163,8 +146,15 @@ public final class MemoryArrayReferenceBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public T replace(int index, T o) {
-        T old = get(index);
-        put(index, o);
+        byte[] bytes = serializer.serialize(o);
+        long addr = memory.malloc(bytes.length);
+        memory.put(addr, bytes);
+
+        Reference ref = refMemory.get(index);
+        T old = serializer.deserialize(memory.get(ref.addr, ref.length));
+        memory.free(ref.addr);
+
+        refMemory.replace(index, new Reference(addr, bytes.length));
         return old;
     }
 
@@ -172,11 +162,15 @@ public final class MemoryArrayReferenceBlock<T> implements MemoryBlock<T> {
      * Remove the object at the index
      *
      * @param index the index to remove
-     * @return null
-     * @throws UnsupportedOperationException cannot remove from array
+     * @return the removed object
      */
     @Override
     public T remove(int index) {
-        throw new UnsupportedOperationException();
+        T old = get(index);
+
+        Reference ref = refMemory.remove(index);
+        memory.free(ref.addr);
+
+        return old;
     }
 }

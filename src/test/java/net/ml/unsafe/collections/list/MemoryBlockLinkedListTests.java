@@ -1,8 +1,7 @@
 package net.ml.unsafe.collections.list;
 
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
-import net.ml.unsafe.collections.memory.blocks.MemorySingleLinkedBlock;
-import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
+import net.ml.unsafe.collections.memory.blocks.SingleLinkedMemoryBlock;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,7 +12,7 @@ import java.util.List;
 public class MemoryBlockLinkedListTests {
     @Test
     public void addToEndTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             List<Integer> list = new MemoryBlockLinkedList<>(memory);
             list.add(0);
             list.add(1);
@@ -26,7 +25,7 @@ public class MemoryBlockLinkedListTests {
 
     @Test
     public void insertInMiddleTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             List<Integer> list = new MemoryBlockLinkedList<>(memory);
             list.add(0);
             list.add(2);
@@ -40,7 +39,7 @@ public class MemoryBlockLinkedListTests {
 
     @Test
     public void removeFromEndTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             List<Integer> list = new MemoryBlockLinkedList<>(memory);
             list.add(0);
             list.add(2);
@@ -53,7 +52,7 @@ public class MemoryBlockLinkedListTests {
 
     @Test
     public void removeFromMiddleTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             List<Integer> list = new MemoryBlockLinkedList<>(memory);
             list.add(0);
             list.add(1);
@@ -67,7 +66,7 @@ public class MemoryBlockLinkedListTests {
 
     @Test
     public void readWriteTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             List<Integer> list = new MemoryBlockLinkedList<>(memory);
             list.add(0);
             list.add(1);
@@ -82,7 +81,7 @@ public class MemoryBlockLinkedListTests {
 
     @Test
     public void resizeTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             List<Integer> list = new MemoryBlockLinkedList<>(memory);
             list.add(0);
             list.add(1);
@@ -95,14 +94,14 @@ public class MemoryBlockLinkedListTests {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void outOfBoundsTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             new MemoryBlockLinkedList<>(memory).add(1000, 0);
         }
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void negativeOutOfBoundsTest() {
-        try (MemoryBlock<MemoryNode<Integer>> memory = new MemorySingleLinkedBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = new SingleLinkedMemoryBlock<>(Integer.SIZE)) {
             new MemoryBlockLinkedList<>(memory).add(-1, 0);
         }
     }

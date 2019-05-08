@@ -1,7 +1,5 @@
 package net.ml.unsafe.collections.list;
 
-import net.ml.unsafe.collections.memory.blocks.models.MemoryLinkedNode;
-import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.AbstractList;
@@ -13,14 +11,14 @@ import java.util.AbstractList;
  * @param <T> the type to store in the linkedlist
  */
 public class MemoryBlockLinkedList<T> extends AbstractList<T> {
-    private final MemoryBlock<MemoryNode<T>> memory;
+    private final MemoryBlock<T> memory;
 
     /**
      * Constructor
      *
      * @param memory the memory block
      */
-    public MemoryBlockLinkedList(MemoryBlock<MemoryNode<T>> memory) {
+    public MemoryBlockLinkedList(MemoryBlock<T> memory) {
         this.memory = memory;
     }
 
@@ -33,7 +31,7 @@ public class MemoryBlockLinkedList<T> extends AbstractList<T> {
     @Override
     public T get(int index) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-        return memory.get(index).getValue();
+        return memory.get(index);
     }
 
     /**
@@ -46,7 +44,7 @@ public class MemoryBlockLinkedList<T> extends AbstractList<T> {
     @Override
     public T set(int index, T element) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-        return memory.replace(index, new MemoryLinkedNode<>(0, 0, 0, element)).getValue();
+        return memory.replace(index, element);
     }
 
     /**
@@ -58,7 +56,7 @@ public class MemoryBlockLinkedList<T> extends AbstractList<T> {
     @Override
     public void add(int index, T element) {
         if (additionOutOfBounds(index)) throw new IndexOutOfBoundsException();
-        memory.put(index, new MemoryLinkedNode<>(0, 0, 0, element));
+        memory.put(index, element);
     }
 
     /**
@@ -70,7 +68,7 @@ public class MemoryBlockLinkedList<T> extends AbstractList<T> {
     @Override
     public T remove(int index) {
         if (outOfBounds(index)) throw new IndexOutOfBoundsException();
-        return memory.remove(index).getValue();
+        return memory.remove(index);
     }
 
     /**

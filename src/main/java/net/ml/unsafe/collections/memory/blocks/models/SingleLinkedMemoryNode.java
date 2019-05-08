@@ -12,9 +12,18 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemoryLinkedNode<T> implements MemoryNode<T> {
-    private long prev;
+public class SingleLinkedMemoryNode<T> implements MemoryNode<T> {
     private long addr;
     private long next;
     private T value;
+
+    @Override
+    public long getPrev() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setPrev(long address) {
+        throw new UnsupportedOperationException();
+    }
 }

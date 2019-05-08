@@ -1,9 +1,7 @@
 package net.ml.unsafe.collections.memory;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
-import net.ml.unsafe.collections.memory.blocks.MemoryLinkedReferenceBlock;
-import net.ml.unsafe.collections.memory.blocks.ReadWriteLockMemoryBlock;
+import net.ml.unsafe.collections.memory.blocks.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,11 +11,67 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class ConcurrentMemoryBlockTests {
     @Test
-    public void concurrentReadTest() {
-        int size = 3;
+    public void concurrentReadArrayBlockTest() {
+        concurrentReadTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
+    }
 
-        try (MemoryBlock<Integer> block = new MemoryLinkedReferenceBlock<>(size);
-             MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
+    @Test
+    public void concurrentWriteArrayBlockTest() {
+        concurrentWriteTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
+    }
+
+    @Test
+    public void concurrentReadWriteArrayBlockTest() {
+        concurrentReadWriteTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
+    }
+
+    @Test
+    public void concurrentReadArrayReferenceBlockTest() {
+        concurrentReadTest(new ArrayReferenceMemoryBlock<>(3));
+    }
+
+    @Test
+    public void concurrentWriteArrayReferenceBlockTest() {
+        concurrentWriteTest(new ArrayReferenceMemoryBlock<>(3));
+    }
+
+    @Test
+    public void concurrentReadWriteArrayReferenceBlockTest() {
+        concurrentReadWriteTest(new ArrayReferenceMemoryBlock<>(3));
+    }
+
+    @Test
+    public void concurrentReadLinkedBlockTest() {
+        concurrentReadTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+    }
+
+    @Test
+    public void concurrentWriteLinkedBlockTest() {
+        concurrentWriteTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+    }
+
+    @Test
+    public void concurrentReadWriteLinkedBlockTest() {
+        concurrentReadWriteTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+    }
+
+    @Test
+    public void concurrentReadLinkedReferenceBlockTest() {
+        concurrentReadTest(new LinkedReferenceMemoryBlock<>());
+    }
+
+    @Test
+    public void concurrentWriteLinkedReferenceBlockTest() {
+        concurrentWriteTest(new LinkedReferenceMemoryBlock<>());
+    }
+
+    @Test
+    public void concurrentReadWriteLinkedReferenceBlockTest() {
+        concurrentReadWriteTest(new LinkedReferenceMemoryBlock<>());
+    }
+
+    private void concurrentReadTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
             memory.put(0, 1);
             memory.put(1, 2);
             memory.put(2, 3);
@@ -33,16 +87,16 @@ public class ConcurrentMemoryBlockTests {
         }
     }
 
-    @Test
-    public void concurrentWriteTest() {
-        int size = 3;
+    private void concurrentWriteTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
+            memory.put(0, 1);
+            memory.put(1, 2);
+            memory.put(2, 3);
 
-        try (MemoryBlock<Integer> block = new MemoryLinkedReferenceBlock<>(size);
-             MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
             Runnable writer = () -> {
-                memory.put(0, 1);
-                memory.put(1, 2);
-                memory.put(2, 3);
+                memory.replace(0, 1);
+                memory.replace(1, 2);
+                memory.replace(2, 3);
             };
 
             CompletableFuture writerOne = CompletableFuture.runAsync(writer);
@@ -58,21 +112,17 @@ public class ConcurrentMemoryBlockTests {
         }
     }
 
-    @Test
-    public void concurrentReadWriteTest() {
-        int size = 3;
-
-        try (MemoryBlock<Integer> block = new MemoryLinkedReferenceBlock<>(size);
-             MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
+    private void concurrentReadWriteTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = new ReadWriteLockMemoryBlock<>(block)) {
             memory.put(0, 0);
             memory.put(1, 0);
             memory.put(2, 0);
 
             Runnable reader = () -> memory.forEach(System.out::println);
             Runnable writer = () -> {
-                memory.put(0, 1);
-                memory.put(1, 2);
-                memory.put(2, 3);
+                memory.replace(0, 1);
+                memory.replace(1, 2);
+                memory.replace(2, 3);
             };
 
             CompletableFuture readerOne = CompletableFuture.runAsync(reader);
