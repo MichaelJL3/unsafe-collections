@@ -62,7 +62,7 @@ public final class BoundedMemoryBlock<T> implements MemoryBlock<T> {
      */
     @Override
     public void put(int index, T o) {
-        if (outOfBounds(index)) throw new IndexOutOfBoundsException();
+        if (additionOutOfBounds(index)) throw new IndexOutOfBoundsException();
         memory.put(index, o);
     }
 
@@ -133,6 +133,16 @@ public final class BoundedMemoryBlock<T> implements MemoryBlock<T> {
     @Override
     public int size() {
         return memory.size();
+    }
+
+    /**
+     * Check that the index is out of the memory bounds for addition
+     *
+     * @param index the index to validate
+     * @return whether or not the index is out of bounds
+     */
+    private boolean additionOutOfBounds(int index) {
+        return index > size() || index < 0;
     }
 
     /**

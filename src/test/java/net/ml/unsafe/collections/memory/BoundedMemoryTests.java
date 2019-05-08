@@ -1,29 +1,58 @@
 package net.ml.unsafe.collections.memory;
 
-import net.ml.unsafe.collections.memory.blocks.BoundedMemoryBlock;
-import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
-import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
-import net.ml.unsafe.collections.serialize.model.Container;
+import net.ml.unsafe.collections.memory.blocks.*;
 import org.junit.Test;
 
 public class BoundedMemoryTests {
     @Test
-    public void inBoundsTest() {
-        int size = 1;
+    public void inBoundsArrayBlockTest() {
+        inBoundsTest(new ArrayMemoryBlock<>(Integer.BYTES));
+    }
 
-        try (MemoryBlock<Container<Integer>> block = new ArrayReferenceMemoryBlock<>(size);
-             MemoryBlock<Container<Integer>> memory = new BoundedMemoryBlock<>(block)) {
-            memory.put(0, new Container<>());
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void outOfBoundsArrayBlockTest() {
+        outOfBoundsTest(new ArrayMemoryBlock<>(Integer.BYTES, 0));
+    }
+
+    @Test
+    public void inBoundsLinkedBlockTest() {
+        inBoundsTest(new LinkedMemoryBlock<>(Integer.BYTES));
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void outOfBoundsLinkedBlockTest() {
+        outOfBoundsTest(new LinkedMemoryBlock<>(Integer.BYTES));
+    }
+
+    @Test
+    public void inBoundsArrayReferenceBlockTest() {
+        inBoundsTest(new ArrayReferenceMemoryBlock<>(1));
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void outOfBoundsArrayReferenceBlockTest() {
+        outOfBoundsTest(new ArrayReferenceMemoryBlock<>(0));
+    }
+
+    @Test
+    public void inBoundsLinkedReferenceBlockTest() {
+        inBoundsTest(new LinkedReferenceMemoryBlock<>());
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void outOfBoundsLinkedReferenceBlockTest() {
+        outOfBoundsTest(new LinkedReferenceMemoryBlock<>());
+    }
+
+    private void inBoundsTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = new BoundedMemoryBlock<>(block)) {
+            memory.put(0, 1);
             memory.get(0);
         }
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void outOfBoundsTest() {
-        int size = 1;
-
-        try (MemoryBlock<Container<Integer>> block = new ArrayReferenceMemoryBlock<>(size);
-             MemoryBlock<Container<Integer>> memory = new BoundedMemoryBlock<>(block)) {
+    private void outOfBoundsTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = new BoundedMemoryBlock<>(block)) {
             memory.get(3);
         }
     }
