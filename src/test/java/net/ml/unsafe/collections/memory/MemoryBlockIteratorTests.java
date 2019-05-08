@@ -1,31 +1,54 @@
 package net.ml.unsafe.collections.memory;
 
-import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
-import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
-import net.ml.unsafe.collections.model.Container;
+import lombok.extern.slf4j.Slf4j;
+import net.ml.unsafe.collections.memory.blocks.*;
 import org.junit.Test;
 
+@Slf4j
 public class MemoryBlockIteratorTests {
     @Test
-    public void iterateTest() {
-        int size = 3;
+    public void iterateArrayMemoryBlock() {
+        iterateTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
+    }
 
-        try (MemoryBlock<Container<Integer>> memory = new ArrayReferenceMemoryBlock<>(size)) {
-            memory.put(0, new Container<>(1, (short) 2, 3));
-            memory.put(1, new Container<>(4, (short) 5, 6));
-            memory.put(2, new Container<>(7, (short) 8, 9));
+    @Test
+    public void iteratePartialFilledArrayMemoryBlock() {
+        iteratePartialFilledTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
+    }
 
-            memory.forEach(System.out::println);
+    @Test
+    public void iterateLinkedMemoryBlock() {
+        iterateTest(new LinkedMemoryBlock<>(Integer.BYTES));
+    }
+
+    @Test
+    public void iterateArrayReferenceMemoryBlock() {
+        iterateTest(new ArrayReferenceMemoryBlock<>(3));
+    }
+
+    @Test
+    public void iteratePartialFilledArrayReferenceMemoryBlock() {
+        iteratePartialFilledTest(new ArrayReferenceMemoryBlock<>(3));
+    }
+
+    @Test
+    public void iterateLinkedReferenceMemoryBlock() {
+        iterateTest(new LinkedReferenceMemoryBlock<>());
+    }
+
+    private void iterateTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            memory.put(0, 1);
+            memory.put(1, 2);
+            memory.put(2, 3);
+            memory.forEach(i -> log.info("{}", i));
         }
     }
 
-    @Test(expected = Exception.class)
-    public void iteratePartialFilledTest() {
-        int size = 3;
-
-        try (MemoryBlock<Integer> memory = new ArrayReferenceMemoryBlock<>(size)) {
+    private void iteratePartialFilledTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
             memory.put(0, 1);
-            memory.forEach(System.out::println);
+            memory.forEach(i -> log.info("{}", i));
         }
     }
 }

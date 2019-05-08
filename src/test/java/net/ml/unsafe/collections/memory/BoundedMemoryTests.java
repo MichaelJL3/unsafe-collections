@@ -3,7 +3,7 @@ package net.ml.unsafe.collections.memory;
 import net.ml.unsafe.collections.memory.blocks.BoundedMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
-import net.ml.unsafe.collections.model.Container;
+import net.ml.unsafe.collections.serialize.model.Container;
 import org.junit.Test;
 
 public class BoundedMemoryTests {

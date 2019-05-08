@@ -1,6 +1,6 @@
 package net.ml.unsafe.collections.serialize;
 
-import net.ml.unsafe.collections.model.Container;
+import net.ml.unsafe.collections.serialize.model.Container;
 import org.junit.Assert;
 import org.junit.Test;
 

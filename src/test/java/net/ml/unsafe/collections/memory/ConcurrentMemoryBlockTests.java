@@ -42,17 +42,17 @@ public class ConcurrentMemoryBlockTests {
 
     @Test
     public void concurrentReadLinkedBlockTest() {
-        concurrentReadTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        concurrentReadTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test
     public void concurrentWriteLinkedBlockTest() {
-        concurrentWriteTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        concurrentWriteTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test
     public void concurrentReadWriteLinkedBlockTest() {
-        concurrentReadWriteTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        concurrentReadWriteTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test

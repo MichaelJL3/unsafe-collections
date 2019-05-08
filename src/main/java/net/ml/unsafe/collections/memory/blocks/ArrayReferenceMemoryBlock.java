@@ -136,7 +136,9 @@ public final class ArrayReferenceMemoryBlock<T> implements MemoryBlock<T> {
     @Override
     public T get(int index) {
         Reference ref = refMemory.get(index);
-        return serializer.deserialize(memory.get(ref.addr, ref.length));
+        return ref.addr != 0 ?
+                serializer.deserialize(memory.get(ref.addr, ref.length)) :
+                null;
     }
 
     /**

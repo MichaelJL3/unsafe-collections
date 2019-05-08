@@ -66,7 +66,7 @@ public final class KryoSerializer<T> implements ByteSerializer<T> {
              Input input = new Input(in)) {
             return (T) kryoThread.get().readClassAndObject(input);
         } catch(IOException ex) {
-            throw new RuntimeException(ex);
+            return null;
         }
     }
 }

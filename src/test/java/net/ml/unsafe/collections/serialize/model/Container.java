@@ -1,4 +1,4 @@
-package net.ml.unsafe.collections.model;
+package net.ml.unsafe.collections.serialize.model;
 
 import java.io.Serializable;
 import java.util.Objects;

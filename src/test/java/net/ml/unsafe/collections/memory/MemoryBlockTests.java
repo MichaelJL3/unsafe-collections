@@ -32,22 +32,22 @@ public class MemoryBlockTests {
 
     @Test
     public void swapLinkedBlockTest() {
-        swapTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        swapTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test
     public void copyLinkedBlockTest() {
-        copyTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        copyTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test
     public void storageLinkedBlockTest() {
-        storageTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        storageTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test
     public void removeLinkedBlockTest() {
-        removeTest(new SingleLinkedMemoryBlock<>(Integer.BYTES));
+        removeTest(new LinkedMemoryBlock<>(Integer.BYTES));
     }
 
     @Test

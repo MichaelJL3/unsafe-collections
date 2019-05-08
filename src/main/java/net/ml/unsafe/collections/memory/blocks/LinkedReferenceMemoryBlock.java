@@ -42,7 +42,7 @@ public final class LinkedReferenceMemoryBlock<T> implements MemoryBlock<T> {
         this.serializer = serializer;
         this.memory = memory;
         //create an inner block with special serializer for references
-        this.refMemory = new SingleLinkedMemoryBlock<>(Reference.size(), new ReferenceSerializer());
+        this.refMemory = new LinkedMemoryBlock<>(Reference.size(), new ReferenceSerializer());
     }
 
     /**
