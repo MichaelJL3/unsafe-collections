@@ -1,177 +1,177 @@
-//package net.ml.unsafe.collections.memory;
-//
-//import net.ml.unsafe.collections.memory.blocks.*;
-//import org.junit.Assert;
-//import org.junit.Test;
-//
-//public class MemoryBlockTests {
-//    @Test
-//    public void swapArrayBlockTest() {
-//        swapTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
-//    }
-//
-//    @Test
-//    public void copyArrayBlockTest() {
-//        copyTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
-//    }
-//
-//    @Test
-//    public void storageArrayBlockTest() {
-//        storageTest(new ArrayMemoryBlock<>(Integer.BYTES));
-//    }
-//
-//    @Test
-//    public void allocateArrayBlockTest() {
-//        allocationTest(new ArrayMemoryBlock<>(Integer.BYTES, 0));
-//    }
-//
-//    @Test
-//    public void reallocateArrayBlockTest() {
-//        reallocationTest(new ArrayMemoryBlock<>(Integer.BYTES, 3));
-//    }
-//
-//    @Test
-//    public void swapLinkedBlockTest() {
-//        swapTest(new LinkedMemoryBlock<>(Integer.BYTES));
-//    }
-//
-//    @Test
-//    public void copyLinkedBlockTest() {
-//        copyTest(new LinkedMemoryBlock<>(Integer.BYTES));
-//    }
-//
-//    @Test
-//    public void storageLinkedBlockTest() {
-//        storageTest(new LinkedMemoryBlock<>(Integer.BYTES));
-//    }
-//
-//    @Test
-//    public void removeLinkedBlockTest() {
-//        removeTest(new LinkedMemoryBlock<>(Integer.BYTES));
-//    }
-//
-//    @Test
-//    public void swapArrayReferenceBlockTest() {
-//        swapTest(new ArrayReferenceMemoryBlock<>(3));
-//    }
-//
-//    @Test
-//    public void copyArrayReferenceBlockTest() {
-//        copyTest(new ArrayReferenceMemoryBlock<>(3));
-//    }
-//
-//    @Test
-//    public void storageArrayReferenceBlockTest() {
-//        storageTest(new ArrayReferenceMemoryBlock<>(3));
-//    }
-//
-//    @Test
-//    public void allocateArrayReferenceBlockTest() {
-//        allocationTest(new ArrayReferenceMemoryBlock<>(0));
-//    }
-//
-//    @Test
-//    public void reallocateArrayReferenceBlockTest() {
-//        reallocationTest(new ArrayReferenceMemoryBlock<>(3));
-//    }
-//
-//    @Test
-//    public void swapLinkedReferenceBlockTest() {
-//        swapTest(new LinkedReferenceMemoryBlock<>());
-//    }
-//
-//    @Test
-//    public void copyLinkedReferenceBlockTest() {
-//        copyTest(new LinkedReferenceMemoryBlock<>());
-//    }
-//
-//    @Test
-//    public void storageLinkedReferenceBlockTest() {
-//        storageTest(new LinkedReferenceMemoryBlock<>());
-//    }
-//
-//    @Test
-//    public void removeLinkedReferenceBlockTest() {
-//        removeTest(new LinkedReferenceMemoryBlock<>());
-//    }
-//
-//    private void allocationTest(MemoryBlock<Integer> block) {
-//        try (MemoryBlock<Integer> memory = block) {
-//            int size = 10;
-//            memory.malloc(size);
-//            Assert.assertEquals(size, memory.size());
-//
-//            memory.free();
-//            Assert.assertEquals(0, memory.size());
-//        }
-//    }
-//
-//    private void reallocationTest(MemoryBlock<Integer> block) {
-//        try (MemoryBlock<Integer> memory = block) {
-//            memory.put(0, 1);
-//
-//            int size = 20;
-//            memory.realloc(size);
-//            Assert.assertEquals(size, memory.size());
-//
-//            Assert.assertEquals(new Integer(1), memory.get(0));
-//
-//            memory.free();
-//            Assert.assertEquals(0, memory.size());
-//        }
-//    }
-//
-//    private void storageTest(MemoryBlock<Integer> block) {
-//        try (MemoryBlock<Integer> memory = block) {
-//            Integer contentOne = 1;
-//            Integer contentTwo = 2;
-//
-//            memory.put(0, contentOne);
-//            memory.put(1, contentTwo);
-//
-//            Assert.assertEquals(contentOne, memory.get(0));
-//            Assert.assertEquals(contentTwo, memory.get(1));
-//        }
-//    }
-//
-//    private void removeTest(MemoryBlock<Integer> block) {
-//        try (MemoryBlock<Integer> memory = block) {
-//            Integer contentOne = 1;
-//            Integer contentTwo = 2;
-//
-//            memory.put(0, contentOne);
-//            memory.put(1, contentTwo);
-//
-//            Assert.assertEquals(contentTwo, memory.remove(1));
-//            Assert.assertEquals(contentOne, memory.remove(0));
-//        }
-//    }
-//
-//    private void swapTest(MemoryBlock<Integer> block) {
-//        try (MemoryBlock<Integer> memory = block) {
-//            Integer contentOne = 1;
-//            Integer contentTwo = 2;
-//
-//            memory.put(0, contentOne);
-//            memory.put(1, contentTwo);
-//            memory.swap(0, 1);
-//
-//            Assert.assertEquals(contentOne, memory.get(1));
-//            Assert.assertEquals(contentTwo, memory.get(0));
-//        }
-//    }
-//
-//    private void copyTest(MemoryBlock<Integer> block) {
-//        try (MemoryBlock<Integer> memory = block) {
-//            Integer contentOne = 1;
-//            Integer contentTwo = 2;
-//
-//            memory.put(0, contentOne);
-//            memory.put(1, contentTwo);
-//            memory.copy(0, 1);
-//
-//            Assert.assertEquals(contentOne, memory.get(0));
-//            Assert.assertEquals(contentOne, memory.get(1));
-//        }
-//    }
-//}
+package net.ml.unsafe.collections.memory;
+
+import net.ml.unsafe.collections.memory.blocks.*;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class MemoryBlockTests {
+    @Test
+    public void swapArrayBlockTest() {
+        swapTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(3).build());
+    }
+
+    @Test
+    public void copyArrayBlockTest() {
+        copyTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(3).build());
+    }
+
+    @Test
+    public void storageArrayBlockTest() {
+        storageTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
+    }
+
+    @Test
+    public void allocateArrayBlockTest() {
+        allocationTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(0).build());
+    }
+
+    @Test
+    public void reallocateArrayBlockTest() {
+        reallocationTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(3).build());
+    }
+
+    @Test
+    public void swapLinkedBlockTest() {
+        swapTest(LinkedMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
+    }
+
+    @Test
+    public void copyLinkedBlockTest() {
+        copyTest(LinkedMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
+    }
+
+    @Test
+    public void storageLinkedBlockTest() {
+        storageTest(LinkedMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
+    }
+
+    @Test
+    public void removeLinkedBlockTest() {
+        removeTest(LinkedMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
+    }
+
+    @Test
+    public void swapArrayReferenceBlockTest() {
+        swapTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(3).build());
+    }
+
+    @Test
+    public void copyArrayReferenceBlockTest() {
+        copyTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(3).build());
+    }
+
+    @Test
+    public void storageArrayReferenceBlockTest() {
+        storageTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(3).build());
+    }
+
+    @Test
+    public void allocateArrayReferenceBlockTest() {
+        allocationTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(0).build());
+    }
+
+    @Test
+    public void reallocateArrayReferenceBlockTest() {
+        reallocationTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(3).build());
+    }
+
+    @Test
+    public void swapLinkedReferenceBlockTest() {
+        swapTest(LinkedReferenceMemoryBlock.<Integer>builder().build());
+    }
+
+    @Test
+    public void copyLinkedReferenceBlockTest() {
+        copyTest(LinkedReferenceMemoryBlock.<Integer>builder().build());
+    }
+
+    @Test
+    public void storageLinkedReferenceBlockTest() {
+        storageTest(LinkedReferenceMemoryBlock.<Integer>builder().build());
+    }
+
+    @Test
+    public void removeLinkedReferenceBlockTest() {
+        removeTest(LinkedReferenceMemoryBlock.<Integer>builder().build());
+    }
+
+    private void allocationTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            int size = 10;
+            memory.malloc(size);
+            Assert.assertEquals(size, memory.size());
+
+            memory.free();
+            Assert.assertEquals(0, memory.size());
+        }
+    }
+
+    private void reallocationTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            memory.put(0, 1);
+
+            int size = 20;
+            memory.realloc(size);
+            Assert.assertEquals(size, memory.size());
+
+            Assert.assertEquals(new Integer(1), memory.get(0));
+
+            memory.free();
+            Assert.assertEquals(0, memory.size());
+        }
+    }
+
+    private void storageTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            Integer contentOne = 1;
+            Integer contentTwo = 2;
+
+            memory.put(0, contentOne);
+            memory.put(1, contentTwo);
+
+            Assert.assertEquals(contentOne, memory.get(0));
+            Assert.assertEquals(contentTwo, memory.get(1));
+        }
+    }
+
+    private void removeTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            Integer contentOne = 1;
+            Integer contentTwo = 2;
+
+            memory.put(0, contentOne);
+            memory.put(1, contentTwo);
+
+            Assert.assertEquals(contentTwo, memory.remove(1));
+            Assert.assertEquals(contentOne, memory.remove(0));
+        }
+    }
+
+    private void swapTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            Integer contentOne = 1;
+            Integer contentTwo = 2;
+
+            memory.put(0, contentOne);
+            memory.put(1, contentTwo);
+            memory.swap(0, 1);
+
+            Assert.assertEquals(contentOne, memory.get(1));
+            Assert.assertEquals(contentTwo, memory.get(0));
+        }
+    }
+
+    private void copyTest(MemoryBlock<Integer> block) {
+        try (MemoryBlock<Integer> memory = block) {
+            Integer contentOne = 1;
+            Integer contentTwo = 2;
+
+            memory.put(0, contentOne);
+            memory.put(1, contentTwo);
+            memory.copy(0, 1);
+
+            Assert.assertEquals(contentOne, memory.get(0));
+            Assert.assertEquals(contentOne, memory.get(1));
+        }
+    }
+}

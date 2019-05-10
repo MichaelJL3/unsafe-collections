@@ -1,9 +1,15 @@
 package net.ml.unsafe.collections.memory.blocks;
 
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
+import net.ml.unsafe.collections.memory.MemoryType;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
+
+import java.util.Optional;
 
 /**
  * Manages a chunk of memory as blocks of objects
@@ -11,51 +17,17 @@ import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
  * @author micha
  * @param <T> the classType of object to store
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
-    private static final int DEFAULT_INIT_CAPACITY = 16;
-    private static final int MAXIMUM_CAPACITY = 1 << 30;
+    transient private static final int DEFAULT_INIT_CAPACITY = 16;
+    transient private static final int MAXIMUM_CAPACITY = 1 << 30;
 
-    private final ByteSerializer<T> serializer;
-    private final Memory memory;
-    private final int classSize;
-
-    private long address = -1;
+    private ByteSerializer<T> serializer;
+    private Memory memory;
+    private int classSize;
     private int capacity;
 
-    /**
-     * Constructor
-     * Uses default initial capacity
-     * Uses byte serializer factory default serializer
-     *
-     * @param classSize number of bytes per object
-     */
-    public ArrayMemoryBlock(int classSize) {
-        this(classSize, DEFAULT_INIT_CAPACITY);
-    }
-
-    /**
-     * Constructor
-     * Uses byte serializer factory default serializer
-     * Uses memory factory default
-     *
-     * @param classSize number of bytes per object
-     * @param capacity number of objects to initially allocate for
-     */
-    public ArrayMemoryBlock(int classSize, int capacity) {
-        this(classSize, capacity, ByteSerializerFactory.getSerializer());
-    }
-
-    /**
-     * Constructor
-     * Uses memory factory default
-     *
-     * @param classSize number of bytes per object
-     * @param capacity number of objects to initially allocate for
-     * @param serializer byte serializer
-     */
-    public ArrayMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
-        this(classSize, capacity, serializer, MemoryFactory.getMemory());
-    }
+    private long address = -1;
 
     /**
      * Constructor
@@ -65,10 +37,15 @@ public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements
      * @param serializer byte serializer
      * @param memory the memory wrapper
      */
+    @Builder
     public ArrayMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer, Memory memory) {
+        this.serializer = Optional.ofNullable(serializer).orElse(ByteSerializerFactory.getSerializer());
+        this.memory = Optional.ofNullable(memory).orElse(MemoryFactory.getMemory());
+
+        if (classSize < 0)
+            throw new IllegalArgumentException("Cannot allocate negative memory for an object: " + classSize);
+
         this.classSize = classSize;
-        this.serializer = serializer;
-        this.memory = memory;
         malloc(capacity);
     }
 
@@ -87,9 +64,11 @@ public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements
 
         //deallocate memory if used
         if (address != -1) free();
-        if (capacity > 0)
-            address = memory.malloc(capacity * classSize);
-        this.capacity = capacity;
+
+        int threshold = capacity > 0 ? capacity : DEFAULT_INIT_CAPACITY;
+        address = memory.malloc(threshold * classSize);
+
+        this.capacity = threshold;
     }
 
     /**

@@ -1,14 +1,18 @@
 package net.ml.unsafe.collections.memory.blocks;
 
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
-import net.ml.unsafe.collections.memory.blocks.models.SingleLinkedMemoryNode;
 import net.ml.unsafe.collections.memory.blocks.models.MemoryNode;
+import net.ml.unsafe.collections.memory.blocks.models.SingleLinkedMemoryNode;
 import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Manages chunks of memory linked as nodes
@@ -16,40 +20,19 @@ import java.util.Arrays;
  * @author micha
  * @param <T> the classType of object to store
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
     private static final int WORD_SIZE = Long.BYTES;
     private static final int ADDRESSES = WORD_SIZE * 2;
 
-    private final ByteSerializer<MemoryNode<T>> nodeSerializer;
-    private final ByteSerializer<T> serializer;
-    private final Memory memory;
-    private final int classSize;
-
-    private int size = 0;
+    private final ByteSerializer<MemoryNode<T>> nodeSerializer = new NodeSerializer();
     private final MemoryNode<T> head = new SingleLinkedMemoryNode<>();
     private MemoryNode<T> tail = head;
 
-    /**
-     * Constructor
-     * Uses byte serializer factory default serializer
-     * Uses memory factory default
-     *
-     * @param classSize number of bytes per object
-     */
-    public LinkedMemoryBlock(int classSize) {
-        this(classSize, ByteSerializerFactory.getSerializer());
-    }
-
-    /**
-     * Constructor
-     * Uses memory factory default
-     *
-     * @param classSize number of bytes per object
-     * @param serializer byte serializer
-     */
-    public LinkedMemoryBlock(int classSize, ByteSerializer<T> serializer) {
-        this(classSize, serializer, MemoryFactory.getMemory());
-    }
+    private ByteSerializer<T> serializer;
+    private Memory memory;
+    private int classSize;
+    private int size;
 
     /**
      * Constructor
@@ -58,11 +41,15 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
      * @param serializer byte serializer
      * @param memory the memory wrapper
      */
+    @Builder
     public LinkedMemoryBlock(int classSize, ByteSerializer<T> serializer, Memory memory) {
+        this.serializer = Optional.ofNullable(serializer).orElse(ByteSerializerFactory.getSerializer());
+        this.memory = Optional.ofNullable(memory).orElse(MemoryFactory.getMemory());
+
+        if (classSize < 0)
+            throw new IllegalArgumentException("Cannot allocate negative memory for an object: " + classSize);
+
         this.classSize = classSize;
-        this.serializer = serializer;
-        this.memory = memory;
-        this.nodeSerializer = new NodeSerializer();
     }
 
     /**

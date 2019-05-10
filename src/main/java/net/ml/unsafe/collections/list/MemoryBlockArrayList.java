@@ -24,7 +24,7 @@ public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T> 
     }
 
     public MemoryBlockArrayList() {
-        this(new ArrayReferenceMemoryBlock<>(0));
+        this(ArrayReferenceMemoryBlock.<T>builder().build());
     }
 
     /**

@@ -12,7 +12,7 @@ import java.util.List;
 public class MemoryBlockArrayListTests {
     @Test
     public void addToEndTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {
             List<Integer> list = new MemoryBlockArrayList<>(memory);
             list.add(0);
             list.add(1);
@@ -25,7 +25,7 @@ public class MemoryBlockArrayListTests {
 
     @Test
     public void insertInMiddleTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {
             List<Integer> list = new MemoryBlockArrayList<>(memory);
             list.add(0);
             list.add(2);
@@ -39,7 +39,7 @@ public class MemoryBlockArrayListTests {
 
     @Test
     public void removeFromEndTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {
             List<Integer> list = new MemoryBlockArrayList<>(memory);
             list.add(0);
             list.add(2);
@@ -52,7 +52,7 @@ public class MemoryBlockArrayListTests {
 
     @Test
     public void removeFromMiddleTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {
             List<Integer> list = new MemoryBlockArrayList<>(memory);
             list.add(0);
             list.add(1);
@@ -66,7 +66,7 @@ public class MemoryBlockArrayListTests {
 
     @Test
     public void readWriteTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {
             List<Integer> list = new MemoryBlockArrayList<>(memory);
             list.add(0);
             list.add(1);
@@ -81,7 +81,7 @@ public class MemoryBlockArrayListTests {
 
     @Test
     public void resizeTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE, 1)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {
             List<Integer> list = new MemoryBlockArrayList<>(memory);
             list.add(0);
             list.add(1);
@@ -94,14 +94,14 @@ public class MemoryBlockArrayListTests {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void outOfBoundsTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE, 1)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).capacity(1).build()) {
             new MemoryBlockArrayList<>(memory).add(1000, 0);
         }
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void negativeOutOfBoundsTest() {
-        try (MemoryBlock<Integer> memory = new ArrayMemoryBlock<>(Integer.SIZE, 1)) {
+        try (MemoryBlock<Integer> memory = ArrayMemoryBlock.<Integer>builder().classSize(Integer.SIZE).capacity(1).build()) {
             new MemoryBlockArrayList<>(memory).add(-1, 0);
         }
     }

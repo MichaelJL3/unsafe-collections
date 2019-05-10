@@ -1,5 +1,8 @@
 package net.ml.unsafe.collections.memory.blocks;
 
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
 import net.ml.unsafe.collections.memory.blocks.models.Reference;
@@ -7,6 +10,7 @@ import net.ml.unsafe.collections.serialize.ByteSerializer;
 import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 import net.ml.unsafe.collections.serialize.ReferenceSerializer;
 
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 /**
@@ -18,31 +22,23 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the classType of object to store
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
-    private final Memory memory;
-    //memory block for references
-    private final MemoryBlock<Reference> refMemory;
-    private final ByteSerializer<T> serializer;
-
-    /**
-     * Constructor
-     * Uses byte serializer factory default serializer
-     * Uses memory factory default
-     */
-    public LinkedReferenceMemoryBlock() {
-        this(ByteSerializerFactory.getSerializer(), MemoryFactory.getMemory());
-    }
+    private Memory memory;
+    private MemoryBlock<Reference> refMemory;
+    private ByteSerializer<T> serializer;
 
     /**
      * Constructor
      *
      * @param serializer byte serializer
      */
+    @Builder
     public LinkedReferenceMemoryBlock(ByteSerializer<T> serializer, Memory memory) {
-        this.serializer = serializer;
-        this.memory = memory;
+        this.serializer = Optional.ofNullable(serializer).orElse(ByteSerializerFactory.getSerializer());
+        this.memory = Optional.ofNullable(memory).orElse(MemoryFactory.getMemory());
         //create an inner block with special serializer for references
-        this.refMemory = new LinkedMemoryBlock<>(Reference.size(), new ReferenceSerializer());
+        this.refMemory = new LinkedMemoryBlock<>(Reference.size(), new ReferenceSerializer(), this.memory);
     }
 
     /**

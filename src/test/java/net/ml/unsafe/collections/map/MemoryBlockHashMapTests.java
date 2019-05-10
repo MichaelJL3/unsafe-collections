@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import net.ml.unsafe.collections.list.MemoryBlockArrayList;
 import net.ml.unsafe.collections.memory.FakeMemory;
+import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
 import net.ml.unsafe.collections.memory.MemoryType;
 import net.ml.unsafe.collections.memory.blocks.ArrayMemoryBlock;
@@ -12,7 +13,6 @@ import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,17 +28,20 @@ public class MemoryBlockHashMapTests {
     @Test
     public void test3() {
         try {
-            MemoryBlock<List<Integer>> memory = new ArrayReferenceMemoryBlock<>(0);
-            MemoryBlock<Integer> embedded = new ArrayMemoryBlock<>(Integer.BYTES, 3);//new ArrayReferenceMemoryBlock<>(0);
+            MemoryBlock<MemoryBlock<Integer>> memory = ArrayReferenceMemoryBlock.<MemoryBlock<Integer>>builder().build();
+            MemoryBlock<Integer> embedded = ArrayMemoryBlock.<Integer>builder()
+                    .classSize(Integer.BYTES)
+                    .capacity(3)
+                    .build();//new ArrayReferenceMemoryBlock<>(0);
 
-            List<List<Integer>> list = new MemoryBlockArrayList<>(memory);
-            List<Integer> innerList = new MemoryBlockArrayList<>(embedded);
-            list.add(innerList);
-            innerList.add(4);
-            innerList.add(3);
-            innerList.add(6);
-            list.set(0, innerList);
-            List<Integer> test = list.get(0);
+            List<MemoryBlock<Integer>> list = new MemoryBlockArrayList<>(memory);
+            //List<Integer> innerList = new MemoryBlockArrayList<>(embedded);
+            list.add(embedded);
+            embedded.put(0, 4);
+            embedded.put(1, 3);
+            embedded.put(2, 6);
+            list.set(0, embedded);
+            MemoryBlock<Integer> test = list.get(0);
             for (int i = 0; i < test.size(); ++i) {
                 System.out.println(test.get(i));
             }
@@ -53,7 +56,8 @@ public class MemoryBlockHashMapTests {
 
     @Test
     public void test() {
-        try (MemoryBlock<List<Map.Entry<Integer, Integer>>> memory = new ArrayReferenceMemoryBlock<>(0)) {
+        try (MemoryBlock<List<Map.Entry<Integer, Integer>>> memory =
+                     ArrayReferenceMemoryBlock.<List<Map.Entry<Integer, Integer>>>builder().build()) {
             Map<Integer, Integer> map = new MemoryBlockHashMap<>(memory);
 
             final Stopwatch watch = Stopwatch.createStarted();

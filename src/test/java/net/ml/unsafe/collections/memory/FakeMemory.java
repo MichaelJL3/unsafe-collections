@@ -3,20 +3,22 @@ package net.ml.unsafe.collections.memory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public final class FakeMemory implements Memory {
     private static final Map<Long, Byte> memory = new ConcurrentHashMap<>();
     private static final Map<Long, Integer> allocated = new ConcurrentHashMap<>();
-    private final Random rand = new Random();
-    private long currentAddress = newAddress();
+
+    private static AtomicLong currentAddress = new AtomicLong(newAddress());
 
     @Override
     public long malloc(int size) {
         long addr = nextAddress(size);
         log.info("Allocate @{}[{}]", addr, size);
+
+        checkAddressUnique(addr, size);
 
         decomposeBytes(addr, new byte[size], false);
         allocated.put(addr, size);
@@ -30,6 +32,8 @@ public final class FakeMemory implements Memory {
 
         long addr = nextAddress(size);
         log.info("Reallocate from @{}[{}] to @{}[{}]", address, prevSize, addr, size);
+
+        checkAddressUnique(addr, size);
 
         byte[] bytes = decomposeAddress(address, prevSize);
         byte[] expanded = new byte[size];
@@ -48,9 +52,10 @@ public final class FakeMemory implements Memory {
         int numBytes = allocated.get(address);
         log.info("Free @{}[{}]", address, numBytes);
 
-        for (int i = 0, byteOffset = 0; i < numBytes; ++i, byteOffset += 4) {
-            log.info("Free byte @[{}]", address + byteOffset);
-            memory.remove(address + byteOffset);
+        long addr = address;
+        for (int i = 0; i < numBytes; ++i, ++addr) {
+            log.info("Free byte @[{}]", addr);
+            memory.remove(addr);
         }
 
         allocated.remove(address);
@@ -84,36 +89,48 @@ public final class FakeMemory implements Memory {
         return decomposeAddress(address, size);
     }
 
-    private long newAddress() {
-        return Math.abs(rand.nextInt(1024));
+    private static long newAddress() {
+        return 1; //Math.abs(rand.nextInt(1024));
     }
 
     private long nextAddress(int size) {
-        return (currentAddress += (size * 4));
+        return currentAddress.getAndAdd(size);
     }
 
     private void decomposeBytes(long address, byte[] bytes, boolean check) {
         if (check) checkAddress(address);
 
         byte b;
-        for (int i = 0; i < bytes.length; ++i) {
+        for (int i = 0; i < bytes.length; ++i, ++address) {
             b = bytes[i];
             log.info("Storing byte @{}[{}] = {}", address, i, b);
             memory.put(address, b);
-            address += 4;
         }
     }
 
     private byte[] decomposeAddress(long address, int size) {
         byte[] bytes = new byte[size];
 
-        for (int i = 0; i < size; ++i, address += 4) {
+        for (int i = 0; i < size; ++i, ++address) {
             log.info("Retrieving byte @{}[{}]", address, i);
             checkAddress(address);
             bytes[i] = memory.get(address);
         }
 
         return bytes;
+    }
+
+    private void checkAddressUnique(long address, int size) {
+        for (int i = 0; i < size; ++i) {
+            checkAddressUnique(address + i);
+        }
+    }
+
+    private void checkAddressUnique(long address) {
+        if (memory.containsKey(address)) {
+            log.error("Address in use @{}", address);
+            throw new RuntimeException("Address already in use " + address);
+        }
     }
 
     private void checkAddress(long address) {

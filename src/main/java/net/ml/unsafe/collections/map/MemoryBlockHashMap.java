@@ -12,8 +12,8 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
     private static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
-    private final MemoryBlock<List<Entry<K,V>>> memory;
-    private final float loadFactor;
+    private MemoryBlock<List<Entry<K,V>>> memory;
+    private float loadFactor;
 
     private Set<Map.Entry<K, V>> entrySet;
     private Set<K> keys;
@@ -23,7 +23,7 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
     private int threshold;
 
     public MemoryBlockHashMap() {
-        this(new ArrayReferenceMemoryBlock<>(0));
+        //this(new ArrayReferenceMemoryBlock<>(0));
     }
 
     public MemoryBlockHashMap(MemoryBlock<List<Entry<K,V>>> memory) {
@@ -187,7 +187,10 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
         if (newCap > size) {
             memory.realloc(newCap);
             IntStream.range(size, newCap)
-                    .forEach(i -> memory.put(i, new MemoryBlockArrayList<>(new ArrayReferenceMemoryBlock<>(0))));
+                    .forEach(i -> {
+                        MemoryBlock<Entry<K,V>> bucket = ArrayReferenceMemoryBlock.<Entry<K,V>>builder().build();
+                        memory.put(i, new MemoryBlockArrayList<>(bucket));
+                    });
         }
     }
 
@@ -273,7 +276,7 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
 
         List<Entry<K, V>> bucket = memory.get(index);
         if (bucket == null) {
-            bucket = new MemoryBlockArrayList<>(new ArrayReferenceMemoryBlock<>());
+            bucket = new MemoryBlockArrayList<>(ArrayReferenceMemoryBlock.<Entry<K,V>>builder().build());
             memory.put(index, bucket);
         }
 
