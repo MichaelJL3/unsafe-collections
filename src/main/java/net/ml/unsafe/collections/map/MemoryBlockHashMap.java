@@ -1,10 +1,11 @@
 package net.ml.unsafe.collections.map;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import net.ml.unsafe.collections.list.MemoryBlockArrayList;
+import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private static final int MAXIMUM_CAPACITY = 1 << 30;
@@ -21,6 +22,10 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
     private int modifications = 0;
     private int threshold;
 
+    public MemoryBlockHashMap() {
+        this(new ArrayReferenceMemoryBlock<>(0));
+    }
+
     public MemoryBlockHashMap(MemoryBlock<List<Entry<K,V>>> memory) {
         this(memory, DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);
     }
@@ -30,9 +35,8 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
     }
 
     public MemoryBlockHashMap(MemoryBlock<List<Entry<K,V>>> memory, int initialCapacity, float loadFactor) {
-        this.memory = memory;
-        resize();
-
+        if (memory.size() != 0)
+            throw new IllegalArgumentException("Illegal initial memory size > 0: " + memory.size());
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
         if (initialCapacity > MAXIMUM_CAPACITY)
@@ -40,8 +44,10 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
         if (loadFactor <= 0 || Float.isNaN(loadFactor))
             throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
 
+        this.memory = memory;
         this.loadFactor = loadFactor;
         this.threshold = tableSizeFor(initialCapacity);
+        resize();
     }
 
     private static int tableSizeFor(int cap) {
@@ -112,6 +118,7 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
 
     @Override
     public void clear() {
+        memory.forEach(List::clear);
         memory.free();
         entrySet = null;
         values = null;
@@ -169,7 +176,7 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
             newCap = threshold;
         else {               // zero initial threshold signifies using defaults
             newCap = DEFAULT_INITIAL_CAPACITY;
-            threshold = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+            threshold = (int) (DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
         }
         if (threshold == 0) {
             float ft = (float) newCap * loadFactor;
@@ -177,7 +184,11 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
                     (int) ft : Integer.MAX_VALUE);
         }
 
-        memory.realloc(newCap);
+        if (newCap > size) {
+            memory.realloc(newCap);
+            IntStream.range(size, newCap)
+                    .forEach(i -> memory.put(i, new MemoryBlockArrayList<>(new ArrayReferenceMemoryBlock<>(0))));
+        }
     }
 
     private V replaceVal(K key, V oldVal, V newVal) {
@@ -210,7 +221,8 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
     }
 
     private V putVal(K key, V value, boolean onlyIfAbsent) {
-        List<Entry<K,V>> bucket = getBucket(hash(key));
+        int index = hash(key);
+        List<Entry<K,V>> bucket = getBucket(index);
         Entry<K,V> node;
 
         for (int i = 0; i < bucket.size(); ++i) {
@@ -225,7 +237,8 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
             }
         }
 
-        bucket.add(new Node(key, value));
+        bucket.add(new Node<>(key, value));
+        memory.put(index, bucket);
         ++modifications;
         if (++size > threshold) resize();
         return null;
@@ -256,42 +269,20 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
     }
 
     private List<Entry<K,V>> getBucket(int hash) {
-        return memory.get((size() - 1) & hash);
+        int index = (size - 1) & hash;
+
+        List<Entry<K, V>> bucket = memory.get(index);
+        if (bucket == null) {
+            bucket = new MemoryBlockArrayList<>(new ArrayReferenceMemoryBlock<>());
+            memory.put(index, bucket);
+        }
+
+        return bucket;
     }
 
     private static int hash(Object key) {
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
-    }
-
-    @Getter
-    @AllArgsConstructor
-    private final class Node implements Entry<K,V> {
-        private final K key;
-        private V value;
-
-        @Override
-        public final V setValue(V value) {
-            V old = this.value;
-            this.value = value;
-            return old;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == this) return true;
-            if (o instanceof Entry) {
-                Entry<?,?> e = (Entry<?,?>) o;
-                return (Objects.equals(key, e.getKey()) &&
-                    Objects.equals(value, e.getValue()));
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(key) ^ Objects.hashCode(value);
-        }
     }
 
     private final class Values extends AbstractCollection<V> {
@@ -316,10 +307,10 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
         }
     }
 
-    private final class KeySet extends AbstractSet<K> {
+    private final class EntrySet extends AbstractSet<Entry<K, V>> {
         @Override
-        public Iterator<K> iterator() {
-            return new KeyIterator();
+        public Iterator<Entry<K,V>> iterator() {
+            return new EntryIterator();
         }
 
         @Override
@@ -352,10 +343,10 @@ public class MemoryBlockHashMap<K, V> extends AbstractMap<K, V> implements Map<K
         }
     }
 
-    private final class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+    private final class KeySet extends AbstractSet<K> {
         @Override
-        public Iterator<Entry<K, V>> iterator() {
-            return new EntryIterator();
+        public Iterator<K> iterator() {
+            return new KeyIterator();
         }
 
         @Override

@@ -16,7 +16,7 @@ import java.util.Arrays;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class LinkedMemoryBlock<T> implements MemoryBlock<T> {
+public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
     private static final int WORD_SIZE = Long.BYTES;
     private static final int ADDRESSES = WORD_SIZE * 2;
 
@@ -37,7 +37,7 @@ public final class LinkedMemoryBlock<T> implements MemoryBlock<T> {
      * @param classSize number of bytes per object
      */
     public LinkedMemoryBlock(int classSize) {
-        this(classSize, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
+        this(classSize, ByteSerializerFactory.getSerializer());
     }
 
     /**
@@ -48,7 +48,7 @@ public final class LinkedMemoryBlock<T> implements MemoryBlock<T> {
      * @param serializer byte serializer
      */
     public LinkedMemoryBlock(int classSize, ByteSerializer<T> serializer) {
-        this(classSize, serializer, MemoryFactory.getDefault());
+        this(classSize, serializer, MemoryFactory.getMemory());
     }
 
     /**

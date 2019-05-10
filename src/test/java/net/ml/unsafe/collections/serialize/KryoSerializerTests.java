@@ -5,7 +5,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class KryoSerializerTests {
-    private final ByteSerializer<Container<Integer>> serializer = new KryoSerializer<>();
+    private final ByteSerializer<Container<Integer>> serializer =
+            ByteSerializerFactory.getSerializer(ByteSerializerType.KRYO_SERIALIZER);
 
     @Test
     public void serializerTest() {

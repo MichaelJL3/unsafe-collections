@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author micha
  * @param <T> the object type to manage in memory
  */
-public final class ReadWriteLockMemoryBlock<T> implements ConcurrentMemoryBlock<T> {
+public final class ReadWriteLockMemoryBlock<T> extends AbstractMemoryBlock<T> implements ConcurrentMemoryBlock<T> {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final MemoryBlock<T> memory;
 

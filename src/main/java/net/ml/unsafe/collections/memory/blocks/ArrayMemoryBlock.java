@@ -11,7 +11,7 @@ import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class ArrayMemoryBlock<T> implements MemoryBlock<T> {
+public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;
     private static final int MAXIMUM_CAPACITY = 1 << 30;
 
@@ -42,7 +42,7 @@ public final class ArrayMemoryBlock<T> implements MemoryBlock<T> {
      * @param capacity number of objects to initially allocate for
      */
     public ArrayMemoryBlock(int classSize, int capacity) {
-        this(classSize, capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
+        this(classSize, capacity, ByteSerializerFactory.getSerializer());
     }
 
     /**
@@ -54,7 +54,7 @@ public final class ArrayMemoryBlock<T> implements MemoryBlock<T> {
      * @param serializer byte serializer
      */
     public ArrayMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
-        this(classSize, capacity, serializer, MemoryFactory.getDefault());
+        this(classSize, capacity, serializer, MemoryFactory.getMemory());
         malloc(capacity);
     }
 
@@ -88,8 +88,8 @@ public final class ArrayMemoryBlock<T> implements MemoryBlock<T> {
 
         //deallocate memory if used
         if (address != -1) free();
-
-        address = memory.malloc(capacity * classSize);
+        if (capacity > 0)
+            address = memory.malloc(capacity * classSize);
         this.capacity = capacity;
     }
 

@@ -18,13 +18,13 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class ArrayReferenceMemoryBlock<T> implements MemoryBlock<T> {
+public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;
 
-    private final Memory memory;
+    transient private final Memory memory;
     //memory block for references
-    private final MemoryBlock<Reference> refMemory;
-    private final ByteSerializer<T> serializer;
+    transient private final MemoryBlock<Reference> refMemory;
+    transient private final ByteSerializer<T> serializer;
 
     /**
      * Constructor
@@ -43,7 +43,7 @@ public final class ArrayReferenceMemoryBlock<T> implements MemoryBlock<T> {
      * @param capacity number of objects to initially allocate for
      */
     public ArrayReferenceMemoryBlock(int capacity) {
-        this(capacity, ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
+        this(capacity, ByteSerializerFactory.getSerializer(), MemoryFactory.getMemory());
     }
 
     /**

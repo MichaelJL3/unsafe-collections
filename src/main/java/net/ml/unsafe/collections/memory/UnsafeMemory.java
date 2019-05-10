@@ -28,7 +28,7 @@ public final class UnsafeMemory implements Memory {
      * Increase the size of a memory allocation using unsafe
      *
      * @param address the address of the original memory allocation
-     * @param oldSize the previous number of bytes
+     * @param prevSize the previous number of bytes
      * @param size the number of bytes to
      * @return the address of the increased allocation
      */

@@ -1,8 +1,10 @@
 package net.ml.unsafe.collections.list;
 
+import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.AbstractList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -16,12 +18,24 @@ public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T> 
     private final MemoryBlock<T> memory;
     private int size = 0;
 
+    @Override
+    public Iterator<T> iterator() {
+        return memory.iterator();
+    }
+
+    public MemoryBlockArrayList() {
+        this(new ArrayReferenceMemoryBlock<>(0));
+    }
+
     /**
      * Constructor
      *
      * @param memory the memory block
      */
     public MemoryBlockArrayList(MemoryBlock<T> memory) {
+        //if (memory.size() != 0)
+        //    throw new IllegalArgumentException("Illegal initial memory size > 0: " + memory.size());
+        //allocate a default capacity here;
         this.memory = memory;
     }
 

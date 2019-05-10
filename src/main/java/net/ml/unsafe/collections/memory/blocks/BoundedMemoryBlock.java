@@ -6,7 +6,7 @@ package net.ml.unsafe.collections.memory.blocks;
  * @author micha
  * @param <T> the object type to manage in memory
  */
-public final class BoundedMemoryBlock<T> implements MemoryBlock<T> {
+public final class BoundedMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
     private final MemoryBlock<T> memory;
 
     /**

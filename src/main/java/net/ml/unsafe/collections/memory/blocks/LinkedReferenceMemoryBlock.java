@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the classType of object to store
  */
-public final class LinkedReferenceMemoryBlock<T> implements MemoryBlock<T> {
+public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
     private final Memory memory;
     //memory block for references
     private final MemoryBlock<Reference> refMemory;
@@ -30,7 +30,7 @@ public final class LinkedReferenceMemoryBlock<T> implements MemoryBlock<T> {
      * Uses memory factory default
      */
     public LinkedReferenceMemoryBlock() {
-        this(ByteSerializerFactory.getDefault(), MemoryFactory.getDefault());
+        this(ByteSerializerFactory.getSerializer(), MemoryFactory.getMemory());
     }
 
     /**
