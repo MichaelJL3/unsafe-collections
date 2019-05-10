@@ -56,7 +56,7 @@ public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> i
         this.serializer = serializer;
         this.memory = memory;
         //create an inner block with special serializer for references
-        this.refMemory = new ArrayMemoryBlock<>(Reference.size(), capacity, new ReferenceSerializer());
+        this.refMemory = new ArrayMemoryBlock<>(Reference.size(), capacity, new ReferenceSerializer(), memory);
     }
 
     /**

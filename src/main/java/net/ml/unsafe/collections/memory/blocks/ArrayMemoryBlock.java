@@ -55,7 +55,6 @@ public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements
      */
     public ArrayMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer) {
         this(classSize, capacity, serializer, MemoryFactory.getMemory());
-        malloc(capacity);
     }
 
     /**

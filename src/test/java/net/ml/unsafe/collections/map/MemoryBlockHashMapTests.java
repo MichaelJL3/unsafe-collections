@@ -3,9 +3,13 @@ package net.ml.unsafe.collections.map;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import net.ml.unsafe.collections.list.MemoryBlockArrayList;
+import net.ml.unsafe.collections.memory.FakeMemory;
+import net.ml.unsafe.collections.memory.MemoryFactory;
+import net.ml.unsafe.collections.memory.MemoryType;
 import net.ml.unsafe.collections.memory.blocks.ArrayMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -16,6 +20,11 @@ import java.util.stream.IntStream;
 
 @Slf4j
 public class MemoryBlockHashMapTests {
+    @BeforeClass
+    public static void setupMemory() {
+        MemoryFactory.register(MemoryType.DEFAULT.name(), FakeMemory::new);
+    }
+
     @Test
     public void test3() {
         try {
@@ -33,7 +42,7 @@ public class MemoryBlockHashMapTests {
             for (int i = 0; i < test.size(); ++i) {
                 System.out.println(test.get(i));
             }
-            test.forEach(System.out::println);
+            //test.forEach(System.out::println);
 
             embedded.free();
             memory.free();
