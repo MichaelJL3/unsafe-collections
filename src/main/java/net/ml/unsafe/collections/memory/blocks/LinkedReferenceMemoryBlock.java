@@ -29,6 +29,16 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
     private ByteSerializer<T> serializer;
 
     /**
+     * Copy constructor
+     *
+     * @param block the block to copy
+     */
+    public LinkedReferenceMemoryBlock(MemoryBlock<T> block) {
+        this(null, null);
+        copyFrom(block);
+    }
+
+    /**
      * Constructor
      *
      * @param serializer byte serializer

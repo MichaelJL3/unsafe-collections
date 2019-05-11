@@ -29,6 +29,17 @@ public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements
     private long address = -1;
 
     /**
+     * Copy constructor
+     * Requires array block because of class size constraints
+     *
+     * @param block the memory block to copy
+     */
+    public ArrayMemoryBlock(ArrayMemoryBlock<T> block) {
+        this(block.classSize, block.capacity, block.serializer, block.memory);
+        copyFrom(block);
+    }
+
+    /**
      * Constructor
      *
      * @param classSize number of bytes per object

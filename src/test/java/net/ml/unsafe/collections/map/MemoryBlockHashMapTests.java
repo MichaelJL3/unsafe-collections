@@ -3,7 +3,7 @@ package net.ml.unsafe.collections.map;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import net.ml.unsafe.collections.list.MemoryBlockArrayList;
-import net.ml.unsafe.collections.memory.FakeMemory;
+import net.ml.unsafe.collections.memory.GCMemory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
 import net.ml.unsafe.collections.memory.MemoryType;
 import net.ml.unsafe.collections.memory.blocks.ArrayMemoryBlock;
@@ -21,26 +21,26 @@ import java.util.stream.IntStream;
 public class MemoryBlockHashMapTests {
     @BeforeClass
     public static void setupMemory() {
-        MemoryFactory.register(MemoryType.DEFAULT.name(), FakeMemory::new);
+        MemoryFactory.register(MemoryType.DEFAULT.name(), GCMemory::new);
     }
 
     @Test
     public void test3() {
         try {
-            MemoryBlock<MemoryBlock<Integer>> memory = ArrayReferenceMemoryBlock.<MemoryBlock<Integer>>builder().build();
+            MemoryBlock<List<Integer>> memory = ArrayReferenceMemoryBlock.<List<Integer>>builder().build();
             MemoryBlock<Integer> embedded = ArrayMemoryBlock.<Integer>builder()
                     .classSize(Integer.BYTES)
                     .capacity(3)
                     .build();//new ArrayReferenceMemoryBlock<>(0);
 
-            List<MemoryBlock<Integer>> list = new MemoryBlockArrayList<>(memory);
-            //List<Integer> innerList = new MemoryBlockArrayList<>(embedded);
-            list.add(embedded);
+            List<List<Integer>> list = new MemoryBlockArrayList<>(memory);
+            List<Integer> innerList = new MemoryBlockArrayList<>(embedded);
+            list.add(innerList);
             embedded.put(0, 4);
             embedded.put(1, 3);
             embedded.put(2, 6);
-            list.set(0, embedded);
-            MemoryBlock<Integer> test = list.get(0);
+            list.set(0, innerList);
+            List<Integer> test = list.get(0);
             for (int i = 0; i < test.size(); ++i) {
                 System.out.println(test.get(i));
             }

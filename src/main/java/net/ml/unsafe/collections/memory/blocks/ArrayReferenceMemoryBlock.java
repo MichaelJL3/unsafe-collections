@@ -29,6 +29,16 @@ public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> i
     private ByteSerializer<T> serializer;
 
     /**
+     * Copy constructor
+     *
+     * @param block the block to copy
+     */
+    public ArrayReferenceMemoryBlock(MemoryBlock<T> block) {
+        this(0, null, null);
+        copyFrom(block);
+    }
+
+    /**
      * Constructor
      *
      * @param capacity number of objects to initially allocate for

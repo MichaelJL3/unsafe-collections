@@ -13,6 +13,7 @@ import net.ml.unsafe.collections.serialize.ByteSerializerFactory;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 /**
  * Manages chunks of memory linked as nodes
@@ -33,6 +34,17 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
     private Memory memory;
     private int classSize;
     private int size;
+
+    /**
+     * Copy constructor
+     * Requires array block because of class size constraints
+     *
+     * @param block the memory block to copy
+     */
+    public LinkedMemoryBlock(LinkedMemoryBlock<T> block) {
+        this(block.classSize, block.serializer, block.memory);
+        copyFrom(block);
+    }
 
     /**
      * Constructor
@@ -56,22 +68,21 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
      * Allocate memory for n objects
      *
      * @param capacity the number of objects to allocate memory for
-     * @throws UnsupportedOperationException nodes are allocated on an insertion basis
      */
     @Override
     public void malloc(int capacity) {
-        throw new UnsupportedOperationException();
+        free();
+        IntStream.range(0, capacity).forEach(i -> put(i, null));
     }
 
     /**
      * Increase memory allocation while preserving existing allocations data
      *
      * @param capacity the number of objects to allocate memory for
-     * @throws UnsupportedOperationException nodes are allocated on an insertion basis
      */
     @Override
     public void realloc(int capacity) {
-        throw new UnsupportedOperationException();
+        IntStream.range(size(), capacity).forEach(i -> put(i, null));
     }
 
     /**
