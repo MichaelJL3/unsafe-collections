@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import net.ml.unsafe.collections.list.MemoryBlockArrayList;
 import net.ml.unsafe.collections.memory.FakeMemory;
-import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.MemoryFactory;
 import net.ml.unsafe.collections.memory.MemoryType;
 import net.ml.unsafe.collections.memory.blocks.ArrayMemoryBlock;
@@ -45,7 +44,7 @@ public class MemoryBlockHashMapTests {
             for (int i = 0; i < test.size(); ++i) {
                 System.out.println(test.get(i));
             }
-            //test.forEach(System.out::println);
+            test.forEach(System.out::println);
 
             embedded.free();
             memory.free();

@@ -1,7 +1,7 @@
 package net.ml.unsafe.collections.list;
 
-import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.ArrayMemoryBlock;
+import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import org.junit.Assert;
 import org.junit.Test;
 

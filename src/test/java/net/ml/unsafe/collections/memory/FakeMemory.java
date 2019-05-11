@@ -54,7 +54,7 @@ public final class FakeMemory implements Memory {
 
         long addr = address;
         for (int i = 0; i < numBytes; ++i, ++addr) {
-            log.info("Free byte @[{}]", addr);
+            log.trace("Free byte @[{}]", addr);
             memory.remove(addr);
         }
 
@@ -103,7 +103,7 @@ public final class FakeMemory implements Memory {
         byte b;
         for (int i = 0; i < bytes.length; ++i, ++address) {
             b = bytes[i];
-            log.info("Storing byte @{}[{}] = {}", address, i, b);
+            log.trace("Storing byte @{}[{}] = {}", address, i, b);
             memory.put(address, b);
         }
     }
@@ -112,7 +112,7 @@ public final class FakeMemory implements Memory {
         byte[] bytes = new byte[size];
 
         for (int i = 0; i < size; ++i, ++address) {
-            log.info("Retrieving byte @{}[{}]", address, i);
+            log.trace("Retrieving byte @{}[{}]", address, i);
             checkAddress(address);
             bytes[i] = memory.get(address);
         }

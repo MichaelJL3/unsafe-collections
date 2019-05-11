@@ -114,8 +114,7 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
      */
     @Override
     public T get(int index) {
-        Reference ref = refMemory.get(index);
-        return serializer.deserialize(memory.get(ref.addr, ref.length));
+        return getFromRef(refMemory.get(index));
     }
 
     /**
@@ -142,15 +141,13 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
      */
     @Override
     public T replace(int index, T o) {
-        byte[] bytes = serializer.serialize(o);
-        long addr = memory.malloc(bytes.length);
-        memory.put(addr, bytes);
-
         Reference ref = refMemory.get(index);
-        T old = serializer.deserialize(memory.get(ref.addr, ref.length));
-        memory.free(ref.addr);
 
-        refMemory.replace(index, new Reference(addr, bytes.length));
+        T old = getFromRef(ref);
+        put(index, o);
+
+        if (ref.addr > 0) memory.free(ref.addr);
+
         return old;
     }
 
@@ -168,5 +165,17 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
         memory.free(ref.addr);
 
         return old;
+    }
+
+    /**
+     * Get the value from the reference
+     *
+     * @param ref the reference of the value
+     * @return the value stored at the reference
+     */
+    private T getFromRef(Reference ref) {
+        return ref.addr != 0 ?
+                serializer.deserialize(memory.get(ref.addr, ref.length)) :
+                null;
     }
 }

@@ -1,6 +1,5 @@
-package net.ml.unsafe.collections.memory;
+package net.ml.unsafe.collections.memory.blocks;
 
-import net.ml.unsafe.collections.memory.blocks.*;
 import org.junit.Test;
 
 public class BoundedMemoryTests {
