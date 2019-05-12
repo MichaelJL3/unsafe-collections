@@ -1,5 +1,6 @@
 package net.ml.unsafe.collections.list;
 
+import net.ml.unsafe.collections.SafeTest;
 import net.ml.unsafe.collections.memory.blocks.LinkedMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 import org.junit.Assert;
@@ -9,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class MemoryBlockLinkedListTests {
+public class MemoryBlockLinkedListTests extends SafeTest {
     @Test
     public void addToEndTest() {
         try (MemoryBlock<Integer> memory = LinkedMemoryBlock.<Integer>builder().classSize(Integer.SIZE).build()) {

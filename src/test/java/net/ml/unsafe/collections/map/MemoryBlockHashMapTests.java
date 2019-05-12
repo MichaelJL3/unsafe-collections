@@ -4,14 +4,15 @@ import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import net.ml.unsafe.collections.SafeTest;
 import net.ml.unsafe.collections.list.MemoryBlockArrayList;
-import net.ml.unsafe.collections.memory.*;
+import net.ml.unsafe.collections.memory.GCMemory;
+import net.ml.unsafe.collections.memory.Memory;
 import net.ml.unsafe.collections.memory.blocks.ArrayMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import net.ml.unsafe.collections.memory.blocks.MemoryBlockBuilder;
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,20 +23,67 @@ public class MemoryBlockHashMapTests extends SafeTest {
     @Test
     public void test3() {
         try {
-            MemoryBlock<List<Integer>> memory = ArrayReferenceMemoryBlock.<List<Integer>>builder().build();
-            MemoryBlock<Integer> embedded = ArrayMemoryBlock.<Integer>builder()
-                    .classSize(Integer.BYTES)
+            MemoryBlock<List<Integer>> memory = MemoryBlockBuilder.<List<Integer>>builder()
+                    .capacity(1)
+                    .build();
+            MemoryBlock<Integer> embedded = MemoryBlockBuilder.<Integer>builder()
+                    .classType(Integer.class)
                     .capacity(3)
                     .build();
 
             List<List<Integer>> list = new MemoryBlockArrayList<>(memory);
             List<Integer> innerList = new MemoryBlockArrayList<>(embedded);
-            list.add(innerList);
             innerList.add(4);
             innerList.add(3);
             innerList.add(6);
-            list.set(0, innerList);
+            list.add(innerList);
+            //list.set(0, innerList);
             List<Integer> test = list.get(0);
+            test.forEach(System.out::println);
+
+            embedded.free();
+            memory.free();
+        } catch(Exception ex) {
+            log.error(ex.getMessage(), ex);
+        }
+    }
+
+    @Test
+    public void test5() {
+        try {
+            MemoryBlock<Object> memory = ArrayReferenceMemoryBlock.<Object>builder()
+                    .capacity(1)
+                    .build();
+
+            List<Object> list = new MemoryBlockArrayList<>(memory);
+            list.add(new Object());
+            list.forEach(System.out::println);
+
+            memory.free();
+        } catch(Exception ex) {
+            log.error(ex.getMessage(), ex);
+        }
+    }
+
+    @Test
+    public void test4() {
+        try {
+            MemoryBlock<MemoryBlock<Integer>> memory = ArrayReferenceMemoryBlock.<MemoryBlock<Integer>>builder()
+                    .capacity(1)
+                    .build();
+            MemoryBlock<Integer> embedded = ArrayMemoryBlock.<Integer>builder()
+                    .classSize(Integer.BYTES)
+                    .capacity(3)
+                    .build();
+
+            List<MemoryBlock<Integer>> list = new MemoryBlockArrayList<>(memory);
+            //List<Integer> innerList = new MemoryBlockArrayList<>(embedded);
+            list.add(embedded);
+            embedded.put(0, 4);
+            embedded.put(1, 3);
+            embedded.put(2, 6);
+            list.set(0, embedded);
+            MemoryBlock<Integer> test = list.get(0);
             test.forEach(System.out::println);
 
             embedded.free();
