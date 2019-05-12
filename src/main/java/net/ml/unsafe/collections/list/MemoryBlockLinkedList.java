@@ -1,5 +1,11 @@
 package net.ml.unsafe.collections.list;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoSerializable;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.AbstractList;
@@ -10,8 +16,9 @@ import java.util.AbstractList;
  * @author micha
  * @param <T> the type to store in the linkedlist
  */
-public class MemoryBlockLinkedList<T> extends AbstractList<T> {
-    private final MemoryBlock<T> memory;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class MemoryBlockLinkedList<T> extends AbstractList<T> implements KryoSerializable {
+    private MemoryBlock<T> memory;
 
     /**
      * Constructor
@@ -108,5 +115,28 @@ public class MemoryBlockLinkedList<T> extends AbstractList<T> {
      */
     private boolean additionOutOfBounds(int index) {
         return index > memory.size() || index < 0;
+    }
+
+    /**
+     * Serialize a linkedlist
+     *
+     * @param kryo the kryo reference
+     * @param output the output to write the values to
+     */
+    @Override
+    public void write(Kryo kryo, Output output) {
+        kryo.writeClassAndObject(output, memory);
+    }
+
+    /**
+     * Deserialize a linkedlist
+     *
+     * @param kryo the kryo reference
+     * @param input the input to get the values from
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void read(Kryo kryo, Input input) {
+        memory = (MemoryBlock<T>) kryo.readClassAndObject(input);
     }
 }

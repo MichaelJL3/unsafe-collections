@@ -3,6 +3,7 @@ package net.ml.unsafe.collections.serialize;
 import net.ml.unsafe.collections.memory.blocks.models.Reference;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
 
 /**
  * Serializer for references
@@ -10,6 +11,7 @@ import java.nio.ByteBuffer;
  * @author micha
  */
 public final class ReferenceSerializer implements ByteSerializer<Reference> {
+    private static final Reference EMPTY_REF = new Reference(0, 0);
     private final ByteBuffer byteBuffer = ByteBuffer.allocate(Reference.size());
 
     /**
@@ -20,9 +22,11 @@ public final class ReferenceSerializer implements ByteSerializer<Reference> {
      */
     @Override
     public byte[] serialize(Reference ref) {
+        ref = Optional.ofNullable(ref).orElse(EMPTY_REF);
+
         byteBuffer.clear();
-        byteBuffer.putLong(0, ref.addr);
-        byteBuffer.putInt(Reference.WORD_SIZE, ref.length);
+        byteBuffer.putLong(0, ref.getAddr());
+        byteBuffer.putInt(Reference.WORD_SIZE, ref.getLength());
         return byteBuffer.array();
     }
 

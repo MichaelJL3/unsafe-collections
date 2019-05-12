@@ -59,7 +59,7 @@ public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> i
     public void free() {
         IntStream.range(0, size()).forEach(i -> {
             Reference ref = refMemory.get(i);
-            if (ref.addr > 0) memory.free(ref.addr);
+            if (ref.getAddr() > 0) memory.free(ref.getAddr());
         });
 
         refMemory.free();
@@ -85,7 +85,7 @@ public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> i
     @Override
     public void copy(int indexA, int indexB) {
         Reference refB = refMemory.get(indexB);
-        if (refB.addr > 0) memory.free(refB.addr);
+        if (refB.getAddr() > 0) memory.free(refB.getAddr());
 
         put(indexB, get(indexA));
     }
@@ -160,7 +160,7 @@ public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> i
         T old = getFromRef(ref);
         put(index, o);
 
-        if (ref.addr != 0) memory.free(ref.addr);
+        if (ref.getAddr() != 0) memory.free(ref.getAddr());
 
         return old;
     }
@@ -184,8 +184,8 @@ public final class ArrayReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> i
      * @return the value stored at the reference
      */
     private T getFromRef(Reference ref) {
-        return ref.addr != 0 ?
-                serializer.deserialize(memory.get(ref.addr, ref.length)) :
+        return ref.getAddr() != 0 ?
+                serializer.deserialize(memory.get(ref.getAddr(), ref.getLength())) :
                 null;
     }
 }

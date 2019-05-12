@@ -34,7 +34,7 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
      * @param block the block to copy
      */
     public LinkedReferenceMemoryBlock(MemoryBlock<T> block) {
-        this(null, null);
+        this(0, null, null);
         copyFrom(block);
     }
 
@@ -44,11 +44,11 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
      * @param serializer byte serializer
      */
     @Builder
-    public LinkedReferenceMemoryBlock(ByteSerializer<T> serializer, Memory memory) {
+    public LinkedReferenceMemoryBlock(int capacity, ByteSerializer<T> serializer, Memory memory) {
         this.serializer = Optional.ofNullable(serializer).orElse(ByteSerializerFactory.getSerializer());
         this.memory = Optional.ofNullable(memory).orElse(MemoryFactory.getMemory());
         //create an inner block with special serializer for references
-        this.refMemory = new LinkedMemoryBlock<>(Reference.size(), new ReferenceSerializer(), this.memory);
+        this.refMemory = new LinkedMemoryBlock<>(Reference.size(), capacity, new ReferenceSerializer(), this.memory);
     }
 
     /**
@@ -58,13 +58,14 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
     public void free() {
         IntStream.range(0, size()).forEach(i -> {
             Reference ref = refMemory.get(i);
-            if (ref.addr > 0) memory.free(ref.addr);
+            if (ref.getAddr() > 0) memory.free(ref.getAddr());
         });
 
         refMemory.free();
     }
 
     /**
+     * Swap the references at the two indexes in memory using unsafe
      * Swap the references at the two indexes in memory using unsafe
      *
      * @param indexA the index of the first object
@@ -152,11 +153,14 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
     @Override
     public T replace(int index, T o) {
         Reference ref = refMemory.get(index);
-
         T old = getFromRef(ref);
-        put(index, o);
 
-        if (ref.addr > 0) memory.free(ref.addr);
+        byte[] bytes = serializer.serialize(o);
+        long addr = memory.malloc(bytes.length);
+        memory.put(addr, bytes);
+        refMemory.replace(index, new Reference(addr, bytes.length));
+
+        if (ref.getAddr() > 0) memory.free(ref.getAddr());
 
         return old;
     }
@@ -172,7 +176,7 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
         T old = get(index);
 
         Reference ref = refMemory.remove(index);
-        memory.free(ref.addr);
+        memory.free(ref.getAddr());
 
         return old;
     }
@@ -184,8 +188,8 @@ public final class LinkedReferenceMemoryBlock<T> extends AbstractMemoryBlock<T> 
      * @return the value stored at the reference
      */
     private T getFromRef(Reference ref) {
-        return ref.addr != 0 ?
-                serializer.deserialize(memory.get(ref.addr, ref.length)) :
+        return ref.getAddr() != 0 ?
+                serializer.deserialize(memory.get(ref.getAddr(), ref.getLength())) :
                 null;
     }
 }

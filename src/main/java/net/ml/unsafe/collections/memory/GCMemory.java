@@ -34,7 +34,7 @@ public final class GCMemory implements Memory {
 
         byte[] bytes = decomposeAddress(address, prevSize);
         byte[] expanded = new byte[size];
-        System.arraycopy(bytes, 0, expanded, 0, size);
+        System.arraycopy(bytes, 0, expanded, 0, prevSize);
         free(address);
 
         decomposeBytes(addr, expanded, false);
@@ -85,7 +85,9 @@ public final class GCMemory implements Memory {
     private void decomposeBytes(long address, byte[] bytes, boolean check) {
         if (check) checkAddress(address);
 
-        for (byte b : bytes) memory.put(address, b);
+        for (int i = 0; i < bytes.length; ++i, ++address) {
+            memory.put(address, bytes[i]);
+        }
     }
 
     private byte[] decomposeAddress(long address, int size) {

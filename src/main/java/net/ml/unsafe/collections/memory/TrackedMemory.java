@@ -69,7 +69,7 @@ public final class TrackedMemory implements Memory {
         long addr = memory.realloc(address, prevSize, size);
         allocations.remove(address);
         allocations.put(addr, size);
-        return size;
+        return addr;
     }
 
     /**

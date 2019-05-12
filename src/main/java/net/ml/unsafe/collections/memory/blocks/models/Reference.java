@@ -1,10 +1,13 @@
 package net.ml.unsafe.collections.memory.blocks.models;
 
+import lombok.Getter;
+
 /**
  * Reference holds address and length in bytes of object
  *
  * @author micha
  */
+@Getter
 public class Reference {
     public static final int WORD_SIZE = Long.BYTES;
     public static final int LEN_SIZE = Integer.BYTES;
@@ -29,6 +32,6 @@ public class Reference {
         return WORD_SIZE + LEN_SIZE;
     }
 
-    public final long addr;
-    public final int length;
+    private final long addr;
+    private final int length;
 }

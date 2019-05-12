@@ -1,10 +1,11 @@
 package net.ml.unsafe.collections.memory.blocks;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ml.unsafe.collections.SafeTest;
 import org.junit.Test;
 
 @Slf4j
-public class MemoryBlockIteratorTests {
+public class MemoryBlockIteratorTests extends SafeTest {
     @Test
     public void iterateArrayMemoryBlock() {
         iterateTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(3).build());

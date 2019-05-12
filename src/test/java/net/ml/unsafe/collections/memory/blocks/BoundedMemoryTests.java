@@ -1,8 +1,9 @@
 package net.ml.unsafe.collections.memory.blocks;
 
+import net.ml.unsafe.collections.SafeTest;
 import org.junit.Test;
 
-public class BoundedMemoryTests {
+public class BoundedMemoryTests extends SafeTest {
     @Test
     public void inBoundsArrayBlockTest() {
         inBoundsTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
@@ -10,7 +11,7 @@ public class BoundedMemoryTests {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void outOfBoundsArrayBlockTest() {
-        outOfBoundsTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(0).build());
+        outOfBoundsTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
     }
 
     @Test
@@ -25,12 +26,12 @@ public class BoundedMemoryTests {
 
     @Test
     public void inBoundsArrayReferenceBlockTest() {
-        inBoundsTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(1).build());
+        inBoundsTest(ArrayReferenceMemoryBlock.<Integer>builder().build());
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void outOfBoundsArrayReferenceBlockTest() {
-        outOfBoundsTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(0).build());
+        outOfBoundsTest(ArrayReferenceMemoryBlock.<Integer>builder().build());
     }
 
     @Test
@@ -52,7 +53,7 @@ public class BoundedMemoryTests {
 
     private void outOfBoundsTest(MemoryBlock<Integer> block) {
         try (MemoryBlock<Integer> memory = new BoundedMemoryBlock<>(block)) {
-            memory.get(3);
+            memory.get(9);
         }
     }
 }

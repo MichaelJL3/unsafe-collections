@@ -1,9 +1,10 @@
 package net.ml.unsafe.collections.memory.blocks;
 
+import net.ml.unsafe.collections.SafeTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class MemoryBlockTests {
+public class MemoryBlockTests extends SafeTest {
     @Test
     public void swapArrayBlockTest() {
         swapTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(3).build());
@@ -17,6 +18,11 @@ public class MemoryBlockTests {
     @Test
     public void storageArrayBlockTest() {
         storageTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void removeArrayBlockTest() {
+        removeTest(ArrayMemoryBlock.<Integer>builder().classSize(Integer.BYTES).build());
     }
 
     @Test
@@ -50,6 +56,16 @@ public class MemoryBlockTests {
     }
 
     @Test
+    public void allocateLinkedBlockTest() {
+        allocationTest(LinkedMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(0).build());
+    }
+
+    @Test
+    public void reallocateLinkedBlockTest() {
+        reallocationTest(LinkedMemoryBlock.<Integer>builder().classSize(Integer.BYTES).capacity(3).build());
+    }
+
+    @Test
     public void swapArrayReferenceBlockTest() {
         swapTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(3).build());
     }
@@ -62,6 +78,11 @@ public class MemoryBlockTests {
     @Test
     public void storageArrayReferenceBlockTest() {
         storageTest(ArrayReferenceMemoryBlock.<Integer>builder().capacity(3).build());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void removeArrayReferenceBlockTest() {
+        removeTest(ArrayReferenceMemoryBlock.<Integer>builder().build());
     }
 
     @Test
@@ -87,6 +108,16 @@ public class MemoryBlockTests {
     @Test
     public void storageLinkedReferenceBlockTest() {
         storageTest(LinkedReferenceMemoryBlock.<Integer>builder().build());
+    }
+
+    @Test
+    public void allocateLinkedReferenceBlockTest() {
+        allocationTest(LinkedReferenceMemoryBlock.<Integer>builder().capacity(0).build());
+    }
+
+    @Test
+    public void reallocateLinkedReferenceBlockTest() {
+        reallocationTest(LinkedReferenceMemoryBlock.<Integer>builder().capacity(3).build());
     }
 
     @Test

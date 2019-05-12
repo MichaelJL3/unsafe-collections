@@ -18,8 +18,8 @@ import java.util.Optional;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ArrayMemoryBlock<T> extends AbstractMemoryBlock<T> implements MemoryBlock<T> {
-    transient private static final int DEFAULT_INIT_CAPACITY = 16;
-    transient private static final int MAXIMUM_CAPACITY = 1 << 30;
+    private static final int DEFAULT_INIT_CAPACITY = 8;
+    private static final int MAXIMUM_CAPACITY = 1 << 30;
 
     private ByteSerializer<T> serializer;
     private Memory memory;

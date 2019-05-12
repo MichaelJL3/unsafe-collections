@@ -26,10 +26,10 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
     private static final int WORD_SIZE = Long.BYTES;
     private static final int ADDRESSES = WORD_SIZE * 2;
 
-    private final ByteSerializer<MemoryNode<T>> nodeSerializer = new NodeSerializer();
     private final MemoryNode<T> head = new SingleLinkedMemoryNode<>();
     private MemoryNode<T> tail = head;
 
+    private ByteSerializer<MemoryNode<T>> nodeSerializer;
     private ByteSerializer<T> serializer;
     private Memory memory;
     private int classSize;
@@ -42,7 +42,7 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
      * @param block the memory block to copy
      */
     public LinkedMemoryBlock(LinkedMemoryBlock<T> block) {
-        this(block.classSize, block.serializer, block.memory);
+        this(block.classSize, 0, block.serializer, block.memory);
         copyFrom(block);
     }
 
@@ -54,7 +54,7 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
      * @param memory the memory wrapper
      */
     @Builder
-    public LinkedMemoryBlock(int classSize, ByteSerializer<T> serializer, Memory memory) {
+    public LinkedMemoryBlock(int classSize, int capacity, ByteSerializer<T> serializer, Memory memory) {
         this.serializer = Optional.ofNullable(serializer).orElse(ByteSerializerFactory.getSerializer());
         this.memory = Optional.ofNullable(memory).orElse(MemoryFactory.getMemory());
 
@@ -62,6 +62,9 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
             throw new IllegalArgumentException("Cannot allocate negative memory for an object: " + classSize);
 
         this.classSize = classSize;
+        nodeSerializer = new NodeSerializer();
+
+        if (capacity > 0) malloc(capacity);
     }
 
     /**
@@ -117,7 +120,8 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
         memory.put(addr, nodeSerializer.serialize(node));
 
         prev.setNext(addr);
-        memory.put(prev.getAddr(), nodeSerializer.serialize(prev));
+        if (index > 0)
+            memory.put(prev.getAddr(), nodeSerializer.serialize(prev));
 
         ++size;
     }
@@ -169,7 +173,7 @@ public final class LinkedMemoryBlock<T> extends AbstractMemoryBlock<T> implement
 
         for (int i = 0; i < size; ++i) {
             node = next(node);
-            if (node.getNext() > 0) memory.free(node.getNext());
+            if (node.getAddr() > 0) memory.free(node.getAddr());
         }
 
         size = 0;

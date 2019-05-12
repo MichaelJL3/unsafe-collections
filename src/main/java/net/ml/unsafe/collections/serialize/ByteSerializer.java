@@ -8,4 +8,4 @@ package net.ml.unsafe.collections.serialize;
  * @author micha
  * @param <I> the serialized input type
  */
-public interface ByteSerializer<I> extends Serializer<I, byte[]> {}
+public interface ByteSerializer<I> extends Serializer<I, byte[]>{}

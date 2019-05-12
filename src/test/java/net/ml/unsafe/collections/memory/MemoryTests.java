@@ -1,11 +1,12 @@
 package net.ml.unsafe.collections.memory;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ml.unsafe.collections.SafeTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 @Slf4j
-public class MemoryTests {
+public class MemoryTests extends SafeTest {
     private static final Memory memory = new UnsafeMemory();
 
     @Test

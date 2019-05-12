@@ -3,6 +3,7 @@ package net.ml.unsafe.collections.serialize;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,23 +15,9 @@ import java.io.IOException;
  * @author micha
  * @param <T> the type of object to serialize
  */
+@NoArgsConstructor
 public final class KryoSerializer<T> implements ByteSerializer<T> {
     private static final ThreadLocal<Kryo> kryoThread = ThreadLocal.withInitial(Kryo::new);
-
-    /**
-     * Constructor
-     */
-    public KryoSerializer() {}
-
-    /**
-     * Constructor
-     * Uses classType to optimize serialization/deserialization through pre processing
-     *
-     * @param classType the object type to serialize
-     */
-    public KryoSerializer(Class<T> classType) {
-        kryoThread.get().register(classType);
-    }
 
     /**
      * Serialize an object into a byte array

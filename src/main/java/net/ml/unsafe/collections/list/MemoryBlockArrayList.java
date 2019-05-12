@@ -1,10 +1,14 @@
 package net.ml.unsafe.collections.list;
 
-import net.ml.unsafe.collections.memory.blocks.ArrayReferenceMemoryBlock;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoSerializable;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.ml.unsafe.collections.memory.blocks.MemoryBlock;
 
 import java.util.AbstractList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -14,18 +18,10 @@ import java.util.stream.IntStream;
  * @author micha
  * @param <T> the type to store in the arraylist
  */
-public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T> {
-    private final MemoryBlock<T> memory;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T>, KryoSerializable {
+    private MemoryBlock<T> memory;
     private int size = 0;
-
-    @Override
-    public Iterator<T> iterator() {
-        return memory.iterator();
-    }
-
-    public MemoryBlockArrayList() {
-        this(ArrayReferenceMemoryBlock.<T>builder().build());
-    }
 
     /**
      * Constructor
@@ -33,9 +29,6 @@ public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T> 
      * @param memory the memory block
      */
     public MemoryBlockArrayList(MemoryBlock<T> memory) {
-        //if (memory.size() != 0)
-        //    throw new IllegalArgumentException("Illegal initial memory size > 0: " + memory.size());
-        //allocate a default capacity here;
         this.memory = memory;
     }
 
@@ -165,5 +158,30 @@ public class MemoryBlockArrayList<T> extends AbstractList<T> implements List<T> 
      */
     private boolean additionOutOfBounds(int index) {
         return index < 0 || index > size();
+    }
+
+    /**
+     * Serialize an arraylist
+     *
+     * @param kryo the kryo reference
+     * @param output the output to write the values to
+     */
+    @Override
+    public void write(Kryo kryo, Output output) {
+        output.writeInt(size());
+        kryo.writeClassAndObject(output, memory);
+    }
+
+    /**
+     * Deserialize an arraylist
+     *
+     * @param kryo the kryo reference
+     * @param input the input to get the values from
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void read(Kryo kryo, Input input) {
+        size = input.readInt();
+        memory = (MemoryBlock<T>) kryo.readClassAndObject(input);
     }
 }
